@@ -1,26 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Yu Zeng Photography</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial;
             max-width: 900px;
-            margin: 40px auto;
+            margin: auto;
             padding: 20px;
 
-            /* 背景图片（确保 background.JPG 在仓库根目录） */
-            background-image: url('background.JPG');
+            background-image: url('background.JPG'); /* make sure this file exists */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
         }
 
-        h1 { 
-            font-family: 'Playfair Display', serif;
-            text-align: center; 
-            font-size: 42px;
+        h1 {
+            text-align: center;
+            font-size: 60px;
+            margin-top: 40px;
             margin-bottom: 10px;
         }
 
@@ -33,24 +32,27 @@
             margin-bottom: 40px;
         }
 
-        h2 {
-            text-align: center;
-            font-size: 32px;
-            margin-top: 40px;
-            margin-bottom: 10px;
-        }
-
-        .gallery {
+        .categories {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            margin-top: 40px;
         }
 
-        .gallery img {
-            width: 280px;
-            height: auto;
+        .category-link {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 24px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #000;
+            background: rgba(255,255,255,0.8);
             border-radius: 8px;
+        }
+
+        .category-link:hover {
+            background: rgba(255,255,255,1);
         }
     </style>
 </head>
@@ -60,22 +62,15 @@
     <h1>Yu Zeng Photography</h1>
     <p class="tagline">Let's create some memory</p>
 
-    <h2>Landscape</h2>
-    <div class="gallery">
-        <img src="photos/landscape1.jpg" alt="Landscape 1">
-        <img src="photos/landscape2.jpg" alt="Landscape 2">
-    </div>
-
-    <h2>Wildlife</h2>
-    <div class="gallery">
-        <img src="photos/wildlife1.jpg" alt="Wildlife 1">
-        <img src="photos/wildlife2.jpg" alt="Wildlife 2">
-    </div>
-
-    <h2>Portrait</h2>
-    <div class="gallery">
-        <img src="photos/portrait1.jpg" alt="Portrait 1">
-        <img src="photos/portrait2.jpg" alt="Portrait 2">
+    <div class="categories">
+        <a class="category-link" href="landscape.html">Landscape</a>
+        <a class="category-link" href="wildlife.html">Wildlife</a>
+        <a class="category-link" href="portrait.html">Portrait</a>
+        <!-- Later you can add:
+        <a class="category-link" href="animals.html">Animals</a>
+        <a class="category-link" href="event.html">Event</a>
+        <a class="category-link" href="sport.html">Sport</a>
+        -->
     </div>
 
 </body>
