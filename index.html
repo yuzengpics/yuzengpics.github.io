@@ -4,12 +4,35 @@
     <meta charset="UTF-8">
     <title>Yu Zeng Photography</title>
     <style>
-        body { font-family: Arial; max-width: 900px; margin: auto; padding: 20px; }
+        body {
+            font-family: Arial;
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+
+            /* Background IMAGE */
+            background-image: url('background.jpg'); /* change filename if needed */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
         h1 { text-align: center; }
-        .gallery { display: flex; flex-wrap: wrap; gap: 10px; }
-        .gallery img { width: 280px; height: auto; border-radius: 8px; }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .gallery img {
+            width: 280px;
+            height: auto;
+            border-radius: 8px;
+        }
     </style>
 </head>
+
 <body>
 
 <h1>Yu Zeng Photography</h1>
@@ -34,13 +57,4 @@
 </div>
 
 </body>
-
-
 </html>
-body {
-    background-image: url('background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-}
-
