@@ -180,12 +180,12 @@
       margin: 8px 0 0;
     }
 
-    /* ===== Lightbox ===== */
+    /* ===== Lightbox (JS-controlled) ===== */
     .lightbox{
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.85);
-      display: none;
+      display: none;              /* JS controls show/hide */
       align-items: center;
       justify-content: center;
       flex-direction: column;
@@ -193,14 +193,27 @@
       padding: 20px;
     }
 
-    .lightbox:target{ display:flex; }
+    .lightbox.open{ display:flex; }
 
     .lightbox img{
       max-width: 92%;
       max-height: 80vh;
       border-radius: 12px;
       box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+      opacity: 0;
+      transition: opacity .2s ease;
     }
+
+    .lightbox.loaded img{ opacity: 1; }
+
+    .lb-loading{
+      color: rgba(255,255,255,0.85);
+      font-size: 14px;
+      letter-spacing: 0.4px;
+      margin-bottom: 12px;
+    }
+
+    .lightbox.loaded .lb-loading{ display:none; }
 
     .lightbox .caption{
       color: #fff;
@@ -278,45 +291,97 @@
 
   <main class="page">
     <div class="masonry">
-      <!-- Replace these with your Event thumbnails -->
+      <!-- ✅ 以后加照片：复制一个 item，改 data-full / data-cap / 缩略图 src 就行 -->
+
       <div class="item">
-        <a href="#event1">
-          <img src="photo_x/DSC00741_x.jpg" alt="Event 1">
+        <a href="#" class="thumb"
+           data-full="photos/DSC00741.JPG"
+           data-cap='A walk with "bro" Xin, Liverpool has never been so pretty.'>
+          <img src="photo_x/DSC00741_x.jpg" alt="Liverpool">
         </a>
         <p>Liverpool</p>
       </div>
 
       <div class="item">
-        <a href="#event2">
-          <img src="photo_x/DSC01866_x.jpg" alt="Event 2">
+        <a href="#" class="thumb"
+           data-full="photos/DSC01866.JPG"
+           data-cap='A lovely morning with the view and coffee. We met the band "Rock", their live was crazy'>
+          <img src="photo_x/DSC01866_x.jpg" alt="Colour">
         </a>
         <p>Colour</p>
       </div>
+
     </div>
 
-    <!-- Replace these with your Event full-size images -->
-    <div id="event1" class="lightbox">
-      <a href="#" class="close">&times;</a>
-      <img src="photos/DSC00741.JPG" alt="Event 1 full">
-      <div class="caption">A walk with "bro" Xin, Liverpool has never been so pretty.</div>
-    </div>
-
-    <div id="event2" class="lightbox">
-      <a href="#" class="close">&times;</a>
-      <img src="photos/DSC01866.JPG" alt="Event 2 full">
-      <div class="caption">A lovely morning with the view and coffee. We met the band "Rock", their live was crazy</div>
+    <!-- ✅ 通用 Lightbox：只有一个，不用为每张图写 #event1 #event2 -->
+    <div class="lightbox" id="lightbox">
+      <a href="javascript:void(0)" class="close" id="lbClose">&times;</a>
+      <div class="lb-loading" id="lbLoading">Loading...</div>
+      <img id="lbImg" alt="">
+      <div class="caption" id="lbCap"></div>
     </div>
   </main>
 
   <button id="toTop" aria-label="Back to top">↑</button>
 
   <script>
+    // Back to top
     const toTop = document.getElementById('toTop');
     window.addEventListener('scroll', () => {
       toTop.style.display = (window.scrollY > 300) ? 'flex' : 'none';
     });
     toTop.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Lightbox (preload then show)
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lbImg');
+    const lbCap = document.getElementById('lbCap');
+    const lbClose = document.getElementById('lbClose');
+
+    function openLightbox(fullSrc, caption){
+      lb.classList.add('open');
+      lb.classList.remove('loaded');
+
+      lbCap.textContent = caption || '';
+      lbImg.alt = caption || 'Photo';
+
+      // Preload image first, then reveal
+      const pre = new Image();
+      pre.onload = () => {
+        lbImg.src = fullSrc;
+        lb.classList.add('loaded');
+      };
+      pre.onerror = () => {
+        lbImg.src = '';
+        lbCap.textContent = 'Failed to load image. Please check the file name/path (case-sensitive on GitHub Pages).';
+        lb.classList.add('loaded');
+      };
+      pre.src = fullSrc;
+    }
+
+    function closeLightbox(){
+      lb.classList.remove('open');
+      lb.classList.remove('loaded');
+      lbImg.src = '';
+    }
+
+    // Click thumbnails
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a.thumb');
+      if (!a) return;
+      e.preventDefault();
+      openLightbox(a.dataset.full, a.dataset.cap);
+    });
+
+    // Close actions
+    lbClose.addEventListener('click', closeLightbox);
+    lb.addEventListener('click', (e) => {
+      if (e.target === lb) closeLightbox(); // click outside image closes
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
     });
   </script>
 </body>
