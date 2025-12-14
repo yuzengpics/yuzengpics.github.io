@@ -52,7 +52,7 @@
       gap: 34px;
     }
 
-    /* ===== Marker (no effects) ===== */
+    /* ===== Marker ===== */
     .marker{
       position: relative;
       display: inline-flex;
@@ -88,13 +88,17 @@
       white-space: nowrap;
     }
 
-    /* ===== Side subtitle (only interaction kept) ===== */
+    /* ===== Side subtitle ===== */
     .marker .side-text{
       position: absolute;
       top: 50%;
-      transform: translateY(-50%);
-      width: min(520px, 62vw);
-      padding: 12px 14px;
+
+      /* 核心：宽度跟文字走，不再拉长 */
+      width: auto;
+      max-width: 420px;
+      white-space: normal;
+
+      padding: 10px 14px;
       border-radius: 14px;
 
       font-size: 14px;
@@ -151,8 +155,10 @@
         top: calc(100% + 12px);
         left: 0 !important;
         right: 0 !important;
+
         transform: translateY(0);
-        width: 100%;
+        width: auto;
+        max-width: 100%;
         text-align: center;
       }
 
