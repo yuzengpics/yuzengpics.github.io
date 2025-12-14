@@ -146,12 +146,11 @@
       padding: 26px 20px 70px;
     }
 
-    /* ===== Masonry ===== */
+    /* ===== Masonry (album covers) ===== */
     .masonry{
       column-count: 3;
       column-gap: 15px;
     }
-
     @media (max-width: 900px){ .masonry{ column-count: 2; } }
     @media (max-width: 600px){ .masonry{ column-count: 1; } }
 
@@ -160,15 +159,17 @@
       margin-bottom: 15px;
     }
 
-    .item a img{
+    /* cover image (no <a> anymore) */
+    .item img{
       width: 100%;
       border-radius: 12px;
       display: block;
       box-shadow: 0 10px 22px rgba(0,0,0,0.10);
       transition: transform .2s ease, box-shadow .2s ease;
+      cursor: pointer;
     }
 
-    .item a img:hover{
+    .item img:hover{
       transform: translateY(-2px);
       box-shadow: 0 14px 30px rgba(0,0,0,0.14);
     }
@@ -180,7 +181,7 @@
       margin: 8px 0 0;
     }
 
-    /* ===== Lightbox ===== */
+    /* ===== Lightbox (carousel) ===== */
     .lightbox{
       position: fixed;
       inset: 0;
@@ -192,8 +193,7 @@
       z-index: 3000;
       padding: 20px;
     }
-
-    .lightbox:target{ display:flex; }
+    .lightbox.open{ display:flex; }
 
     .lightbox img{
       max-width: 92%;
@@ -212,14 +212,38 @@
       opacity: 0.95;
     }
 
-    .lightbox a.close{
+    /* Lightbox buttons */
+    .lb-close, .lb-prev, .lb-next{
       position: absolute;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      font-size: 26px;
+      line-height: 40px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .lb-close{
       top: 18px;
       right: 22px;
-      color: #fff;
-      text-decoration: none;
-      font-size: 34px;
-      line-height: 1;
+      font-size: 30px;
+      line-height: 38px;
+    }
+
+    .lb-prev{
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .lb-next{
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
     }
 
     /* ===== Back to Top ===== */
@@ -278,45 +302,138 @@
 
   <main class="page">
     <div class="masonry">
-      <!-- Replace these with your Event thumbnails -->
-      <div class="item">
-        <a href="#event1">
-          <img src="photo_x/DSC00741_x.jpg" alt="Event 1">
-        </a>
+
+      <!-- ===== Album cover cards ===== -->
+      <!-- NOTE:
+           - cover uses photo_x/DSC0XXXX_x.jpg (your thumbnails)
+           - data-images uses your full images (example uses photos/DSC0XXXX.JPG)
+           - Put multiple full images separated by commas
+      -->
+
+      <div class="item album"
+           data-title="Liverpool"
+           data-caption='A walk with "bro" Xin. I remember it was a very lovely afternoon, and we walked a bit around the dock. Liverpool has never been so pretty.'
+           data-images="photos/DSC00741.jpg,DSC00755">
+        <img src="photo_x/DSC00741_x.jpg" alt="Liverpool cover">
         <p>Liverpool</p>
       </div>
 
-      <div class="item">
-        <a href="#event2">
-          <img src="photo_x/DSC01866_x.jpg" alt="Event 2">
-        </a>
+      <div class="item album"
+           data-title="Colour"
+           data-caption='A lovely morning with the view and coffee. We met the band "Rock", their live was crazy.'
+           data-images="photos/DSC01866.JPG,photos/DSC01867.JPG,photos/DSC01868.JPG">
+        <img src="photo_x/DSC01866_x.jpg" alt="Colour cover">
         <p>Colour</p>
       </div>
+
+      <!-- Add more albums here following the same pattern -->
+
     </div>
 
-    <!-- Replace these with your Event full-size images -->
-    <div id="event1" class="lightbox">
-      <a href="#" class="close">&times;</a>
-      <img src="photos/DSC00741.JPG" alt="Event 1 full">
-      <div class="caption">A walk with "bro" Xin, Liverpool has never been so pretty.</div>
-    </div>
+    <!-- ===== One universal lightbox (carousel) ===== -->
+    <div id="lightbox" class="lightbox" aria-hidden="true">
+      <button class="lb-close" aria-label="Close">&times;</button>
+      <button class="lb-prev" aria-label="Previous">&#8249;</button>
 
-    <div id="event2" class="lightbox">
-      <a href="#" class="close">&times;</a>
-      <img src="photos/DSC01866.JPG" alt="Event 2 full">
-      <div class="caption">A lovely morning with the view and coffee. We met the band "Rock", their live was crazy</div>
+      <img id="lb-img" src="" alt="">
+
+      <button class="lb-next" aria-label="Next">&#8250;</button>
+      <div class="caption" id="lb-caption"></div>
     </div>
   </main>
 
   <button id="toTop" aria-label="Back to top">↑</button>
 
   <script>
+    // ===== Back to Top =====
     const toTop = document.getElementById('toTop');
     window.addEventListener('scroll', () => {
       toTop.style.display = (window.scrollY > 300) ? 'flex' : 'none';
     });
     toTop.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ===== Album Lightbox (carousel) =====
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lb-img');
+    const lbCaption = document.getElementById('lb-caption');
+    const btnClose = document.querySelector('.lb-close');
+    const btnPrev = document.querySelector('.lb-prev');
+    const btnNext = document.querySelector('.lb-next');
+
+    let images = [];
+    let index = 0;
+    let title = '';
+    let caption = '';
+
+    function openLightbox(imgList, t, c, start=0){
+      images = imgList;
+      title = t || '';
+      caption = c || '';
+      index = start;
+      render();
+      lb.classList.add('open');
+      lb.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(){
+      lb.classList.remove('open');
+      lb.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    function render(){
+      if(!images.length) return;
+      lbImg.src = images[index];
+      const counter = `${index + 1}/${images.length}`;
+      lbImg.alt = title ? `${title} (${counter})` : `Photo ${counter}`;
+      lbCaption.textContent = title
+        ? `${title} — ${counter}${caption ? " · " + caption : ""}`
+        : counter;
+    }
+
+    function prev(){
+      if(images.length <= 1) return;
+      index = (index - 1 + images.length) % images.length;
+      render();
+    }
+
+    function next(){
+      if(images.length <= 1) return;
+      index = (index + 1) % images.length;
+      render();
+    }
+
+    document.querySelectorAll('.album').forEach(card => {
+      card.addEventListener('click', () => {
+        const list = (card.dataset.images || '')
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+
+        if(!list.length) return;
+
+        openLightbox(list, card.dataset.title, card.dataset.caption, 0);
+      });
+    });
+
+    btnClose.addEventListener('click', closeLightbox);
+    btnPrev.addEventListener('click', prev);
+    btnNext.addEventListener('click', next);
+
+    // Click background to close
+    lb.addEventListener('click', (e) => {
+      if(e.target === lb) closeLightbox();
+    });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if(!lb.classList.contains('open')) return;
+      if(e.key === 'Escape') closeLightbox();
+      if(e.key === 'ArrowLeft') prev();
+      if(e.key === 'ArrowRight') next();
     });
   </script>
 </body>
