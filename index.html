@@ -41,19 +41,22 @@
       text-shadow: 0 2px 18px rgba(255,255,255,0.65);
     }
 
-    /* ===== Vertical dock ===== */
-    .cliff-dock{
-      max-width: 1100px;
-      margin: 140px auto 90px;
-      padding: 0 20px;
+/* ===== Vertical dock：左右分栏 ===== */
+.cliff-dock{
+  max-width: 1100px;
+  margin: 140px auto 90px;
+  padding: 0 20px;
 
-      display:flex;
-      flex-direction:column;
-      gap: 34px;
-    }
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 36px;
+}
 
-    /* ===== Marker ===== */
-  /* ===== Marker：横向铭牌（标题 + 副标题） ===== */
+/* 左右列 */
+.marker.left{ justify-self: start; }
+.marker.right{ justify-self: end; }
+
+/* ===== Marker 本体 ===== */
 .marker{
   display: inline-flex;
   align-items: center;
@@ -69,16 +72,20 @@
   border: 1px solid rgba(255,255,255,0.18);
 
   box-shadow: 0 14px 34px rgba(0,0,0,0.35);
-  transition: background .2s ease, box-shadow .2s ease;
-}
 
-/* 左右靠边 */
-.marker.left{ align-self: flex-start; }
-.marker.right{ align-self: flex-end; }
+  /* 关键：宽度由内容决定 */
+  width: fit-content;
+  max-width: 520px;
+
+  transition: background .2s ease,
+              box-shadow .2s ease,
+              max-width .28s ease;
+}
 
 .marker:hover{
   background: rgba(0,0,0,0.56);
   box-shadow: 0 18px 44px rgba(0,0,0,0.40);
+  max-width: 520px;
 }
 
 /* ===== Title ===== */
@@ -89,7 +96,7 @@
   white-space: nowrap;
 }
 
-/* ===== Subtitle（横向，在右边） ===== */
+/* ===== Subtitle：控制显示 ===== */
 .marker .side-text{
   font-size: 14px;
   line-height: 1.4;
@@ -97,14 +104,16 @@
   white-space: nowrap;
 
   opacity: 0;
-  transform: translateX(-6px);
-  transition: opacity .18s ease, transform .22s ease;
+  max-width: 0;
+  overflow: hidden;
+
+  transition: opacity .18s ease, max-width .28s ease;
 }
 
-/* hover 时显示副标题 */
+/* hover：副标题出现 + marker 变长 */
 .marker:hover .side-text{
   opacity: 1;
-  transform: translateX(0);
+  max-width: 360px;
 }
 
     }
@@ -117,32 +126,29 @@
     <p>Let's extract some memory</p>
   </header>
 
-  <main class="cliff-dock">
+ <main class="cliff-dock">
 
-    <!-- Memento → Event -->
-    <a class="marker left" href="event.html">
-      <span class="title">Memento</span>
-      <span class="side-text">A collection of places, people, and stories.</span>
-    </a>
+  <a class="marker left" href="event.html">
+    <span class="title">Memento</span>
+    <span class="side-text">A collection of places, people, and stories.</span>
+  </a>
 
-    <!-- Shutter → Petit things -->
-    <a class="marker right" href="petitthings.html">
-      <span class="title">Shutter</span>
-      <span class="side-text">Pieces, no theme.</span>
-    </a>
+  <a class="marker right" href="petitthings.html">
+    <span class="title">Shutter</span>
+    <span class="side-text">Pieces, no theme.</span>
+  </a>
 
-    <!-- Sports -->
-    <a class="marker left" href="sport.html">
-      <span class="title">Sports shooting</span>
-      <span class="side-text">Climbing, football, ski and more.</span>
-    </a>
+  <a class="marker left" href="sport.html">
+    <span class="title">Sports shooting</span>
+    <span class="side-text">Climbing, football, ski and more.</span>
+  </a>
 
-    <!-- Contact -->
-    <a class="marker right" href="contact.html">
-      <span class="title">Contact</span>
-      <span class="side-text">Create some memory? Contact here.</span>
-    </a>
+  <a class="marker right" href="contact.html">
+    <span class="title">Contact</span>
+    <span class="side-text">Create some memory? Contact here.</span>
+  </a>
 
-  </main>
+</main>
+
 </body>
 </html>
