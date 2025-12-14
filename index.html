@@ -7,41 +7,41 @@
   <title>Yu Zeng Photography</title>
 
   <style>
-    *{ box-sizing:border-box; }
+   *{ box-sizing:border-box; }
 
-    body{
-      margin:0;
-      font-family:'Poppins', Arial, sans-serif;
-      min-height:100vh;
+body{
+  margin:0;
+  font-family:'Poppins', Arial, sans-serif;
+  min-height:100vh;
 
-      background-image:url('photo_x/background_x.jpg');
-      background-size:cover;
-      background-position:center;
-      background-attachment:fixed;
-      color:#111;
-    }
+  background-image:url('photo_x/background_x.jpg');
+  background-size:cover;
+  background-position:center;
+  background-attachment:fixed;
+  color:#111;
+}
 
-    /* ===== Header ===== */
-    .hero{
-      text-align:center;
-      padding: 52px 20px 10px;
-    }
-    .hero h1{
-      margin:0;
-      font-size:64px;
-      font-weight:700;
-      letter-spacing:0.2px;
-      text-shadow: 0 2px 18px rgba(255,255,255,0.65);
-    }
-    .hero p{
-      margin:10px 0 0;
-      font-family: Georgia, serif;
-      font-size:26px;
-      opacity:0.92;
-      text-shadow: 0 2px 18px rgba(255,255,255,0.65);
-    }
+/* ===== Header ===== */
+.hero{
+  text-align:center;
+  padding: 52px 20px 10px;
+}
+.hero h1{
+  margin:0;
+  font-size:64px;
+  font-weight:700;
+  letter-spacing:0.2px;
+  text-shadow: 0 2px 18px rgba(255,255,255,0.65);
+}
+.hero p{
+  margin:10px 0 0;
+  font-family: Georgia, serif;
+  font-size:26px;
+  opacity:0.92;
+  text-shadow: 0 2px 18px rgba(255,255,255,0.65);
+}
 
-/* ===== Vertical dock：左右分栏 ===== */
+/* ===== Dock grid (desktop) ===== */
 .cliff-dock{
   max-width: 1100px;
   margin: 140px auto 90px;
@@ -52,11 +52,11 @@
   row-gap: 60px;
 }
 
-/* 左右列 */
+/* Left / right placement */
 .marker.left{ justify-self: start; }
 .marker.right{ justify-self: end; }
 
-/* ===== Marker 本体 ===== */
+/* ===== Marker ===== */
 .marker{
   display: inline-flex;
   align-items: center;
@@ -73,7 +73,6 @@
 
   box-shadow: 0 14px 34px rgba(0,0,0,0.35);
 
-  /* 关键：宽度由内容决定 */
   width: fit-content;
   max-width: 520px;
 
@@ -85,10 +84,9 @@
 .marker:hover{
   background: rgba(0,0,0,0.56);
   box-shadow: 0 18px 44px rgba(0,0,0,0.40);
-  max-width: 520px;
 }
 
-/* ===== Title ===== */
+/* Title */
 .marker .title{
   font-size: 28px;
   font-weight: 700;
@@ -96,7 +94,7 @@
   white-space: nowrap;
 }
 
-/* ===== Subtitle：控制显示 ===== */
+/* Subtitle (desktop: hidden until hover) */
 .marker .side-text{
   font-size: 14px;
   line-height: 1.4;
@@ -109,27 +107,45 @@
 
   transition: opacity .18s ease, max-width .28s ease;
 }
-
-/* hover：副标题出现 + marker 变长 */
 .marker:hover .side-text{
   opacity: 1;
   max-width: 360px;
 }
 
-    .marker.right{
+/* Right column reads nicer if reversed (desktop only) */
+.marker.right{
   flex-direction: row-reverse;
 }
-
-/* 右侧副标题与标题之间的间距方向修正 */
 .marker.right .side-text{
   text-align: right;
 }
-    
+
+/* ===== Mobile ===== */
 @media (max-width: 820px){
 
+  /* mobile background behavior */
+  body{
+    background-attachment: scroll;
+    background-position: center top;
+  }
+
+  /* hero smaller so you can see sea */
+  .hero{
+    padding: 18px 14px 6px;
+  }
+  .hero h1{
+    font-size: 28px;
+    letter-spacing: 0.1px;
+  }
+  .hero p{
+    font-size: 15px;
+  }
+
+  /* 2 columns -> 1 column */
   .cliff-dock{
     grid-template-columns: 1fr;
     row-gap: 22px;
+    margin-top: 48px; /* content higher on screen */
   }
 
   .marker.left,
@@ -137,62 +153,29 @@
     justify-self: center;
   }
 
-  /* 手机端：强制所有 marker 竖排，并把 gap 变小 */
+  /* stack title + subtitle vertically on mobile */
   .marker{
     flex-direction: column;
     align-items: center;
     text-align: center;
     width: min(92vw, 520px);
-
-    gap: 6px;            /* ← 关键：缩小标题和副标题距离 */
+    gap: 6px;
   }
 
-  /* 关键：覆盖桌面端 .marker.right 的 row-reverse（如果你有的话） */
+  /* override desktop row-reverse */
   .marker.right{
-    flex-direction: column;   /* ← 这一行专门修 right 不生效的问题 */
+    flex-direction: column;
   }
 
+  /* subtitle visible on mobile */
   .marker .side-text{
-    position: static;
-    top: auto;
-    left: auto;
-    right: auto;
-    transform: none;
-
-    display: block;
-    margin-top: 0;       /* ← 用 gap 控制距离，这里就不要再额外加 8px 了 */
-
     opacity: 1;
-    white-space: nowrap; /* 只一行 */
-    overflow: hidden;    /* 不要自动 ... */
     max-width: 100%;
-
-    pointer-events: none;
+    overflow: hidden;
+    white-space: nowrap;
   }
 }
-body{
-    background-attachment: scroll;
-    background-position: center top;
-  }
 
-  /* hero 再压缩 */
-  .hero{
-    padding: 18px 14px 6px;
-  }
-
-  .hero h1{
-    font-size: 28px;   /* 再小一点 */
-    letter-spacing: 0.1px;
-  }
-
-  .hero p{
-    font-size: 15px;
-  }
-
-  /* 内容区上移 */
-  .cliff-dock{
-    margin-top: 48px;
-  }
   </style>
 </head>
 
