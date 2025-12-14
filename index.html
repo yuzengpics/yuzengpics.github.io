@@ -1,328 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yu Zeng Photography</title>
 
   <style>
-    * { box-sizing: border-box; }
+    *{ box-sizing:border-box; }
 
     body{
-      margin: 0;
-      font-family: 'Poppins', Arial, sans-serif;
-      min-height: 100vh;
+      margin:0;
+      font-family:'Poppins', Arial, sans-serif;
+      min-height:100vh;
 
-      /* 你原来的全局背景保留 */
-      background-image: url('photo_x/background_x.jpg');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      color: #111;
+      /* 背景就是主角 */
+      background-image:url('photo_x/background_x.jpg');
+      background-size:cover;
+      background-position:center;
+      background-attachment:fixed;
+      color:#111;
     }
 
-    /* 轻微暗角，提高面板可读性（不属于分区背景图） */
-    .page-overlay{
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse at top, rgba(255,255,255,0.10), rgba(0,0,0,0.20));
-      pointer-events: none;
-      z-index: 0;
+    /* 顶部标题 */
+    .hero{
+      text-align:center;
+      padding: 54px 20px 18px;
+    }
+    .hero h1{
+      margin:0;
+      font-size:64px;
+      font-weight:700;
+      letter-spacing:0.2px;
+      color:#111;
+      text-shadow: 0 2px 18px rgba(255,255,255,0.55);
+    }
+    .hero p{
+      margin:10px 0 0;
+      font-family: Georgia, serif;
+      font-size:26px;
+      opacity:0.92;
+      text-shadow: 0 2px 18px rgba(255,255,255,0.55);
     }
 
-    .wrap{
+    /* 入口区域：占据画面中下部 */
+    .dock{
       position: relative;
-      z-index: 1;
       max-width: 1100px;
       margin: 0 auto;
-      padding: 44px 20px 70px;
+      padding: 40px 20px 70px;
+      min-height: 520px;
     }
 
-    h1{
-      text-align: center;
-      font-size: 56px;
-      margin: 26px 0 8px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
+    /* 左右“盘踞” */
+    .dock-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      align-items:start;
     }
 
-    p.tagline{
-      text-align: center;
-      font-family: Georgia, serif;
-      font-size: 26px;
-      font-weight: 300;
-      margin: 0 0 34px;
-      opacity: 0.92;
-    }
-
-    /* 4个入口：手机1列，桌面2x2 */
-    .grid{
-      display: grid;
-      grid-template-columns: 1fr;
+    /* 每列两个入口，上下分布 */
+    .col{
+      display:flex;
+      flex-direction:column;
       gap: 18px;
-      margin-top: 10px;
-    }
-    @media (min-width: 900px){
-      .grid{
-        grid-template-columns: 1fr 1fr;
-        gap: 22px;
-      }
     }
 
-    /* 基础面板（无背景图） */
-    .panel{
+    /* 关键：入口像“铭牌”而不是卡片 */
+    .tag{
       position: relative;
-      display: block;
-      text-decoration: none;
-      color: #111;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
 
-      min-height: 240px;
-      border-radius: 18px;
-      overflow: hidden;
+      width: min(460px, 100%);
+      padding: 14px 16px;
+      border-radius: 14px;
+      text-decoration:none;
+      color:#111;
 
-      background: rgba(255,255,255,0.74);
-      backdrop-filter: blur(7px);
-      -webkit-backdrop-filter: blur(7px);
+      background: rgba(255,255,255,0.38);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.45);
 
-      border: 1px solid rgba(255,255,255,0.40);
-      box-shadow: 0 14px 34px rgba(0,0,0,0.22);
-
+      box-shadow: 0 10px 26px rgba(0,0,0,0.18);
       transform: translateZ(0);
-      transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
-      outline: none;
+      transition: transform .22s ease, background .22s ease, box-shadow .22s ease;
+      overflow:hidden;
     }
 
-    .panel:hover{
+    /* 左列靠左，右列靠右：盘踞在两侧 */
+    .col.left .tag{ margin-right:auto; }
+    .col.right .tag{ margin-left:auto; }
+
+    .tag:hover{
       transform: translateY(-2px);
-      box-shadow: 0 18px 42px rgba(0,0,0,0.26);
-      background: rgba(255,255,255,0.78);
+      background: rgba(255,255,255,0.52);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.22);
     }
 
-    .content{
-      position: relative;
-      z-index: 3;
-      height: 100%;
-      padding: 22px 22px 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
-    .kicker{
-      font-size: 12px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      opacity: 0.75;
-    }
-
-    .title{
+    /* 标题永远显示 */
+    .tag .title{
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      line-height: 1;
       margin: 0;
-      font-size: 32px;
-      font-weight: 600;
-      line-height: 1.05;
-      transition: transform .25s ease;
     }
 
-    .desc{
-      margin: 0;
-      font-size: 14px;
-      line-height: 1.4;
-      opacity: 0.80;
-      max-width: 52ch;
-    }
+    /* 副标题默认隐藏：hover 才滑出 */
+    .tag .sub{
+      position:absolute;
+      left:16px;
+      right:16px;
+      bottom:10px;
 
-    @media (max-width: 520px){
-      h1{ font-size: 42px; }
-      p.tagline{ font-size: 20px; margin-bottom: 26px; }
-      .panel{ min-height: 200px; }
-      .title{ font-size: 28px; }
-    }
-
-    /* =========================================================
-       1) Memento：底片反转（invert + contrast），不是黑白
-       ========================================================= */
-
-    /* 反转会作用到整个卡片：包含文字。为了让文字仍然可读，
-       我们用 ::before 做一个“底片层”，并让文字颜色在 hover 时切换 */
-    .memento::before{
-      content:"";
-      position: absolute;
-      inset: 0;
-      background: rgba(255,255,255,0.92);
+      font-size: 13px;
+      line-height: 1.35;
       opacity: 0;
-      transition: opacity .25s ease;
-      z-index: 1;
+      transform: translateY(10px);
+      transition: opacity .18s ease, transform .22s ease;
+      color: rgba(0,0,0,0.74);
+      pointer-events:none;
     }
 
-    .memento:hover::before{
+    /* hover 展开副标题，同时让整体高度变高一点 */
+    .tag:hover{ padding-bottom: 40px; }
+    .tag:hover .sub{
       opacity: 1;
+      transform: translateY(0);
     }
 
-    /* 底片反转效果 */
-    .memento:hover{
-      filter: invert(1) contrast(1.14) saturate(0.92);
+    /* ====== Hover Effects: 更明显但不浮夸 ====== */
+
+    /* 1) Memento：底片反转（只在 tag 内生效，明显但不毁背景） */
+    .tag.memento:hover{
+      filter: invert(1) contrast(1.18) saturate(0.92);
+    }
+    /* 反转后文字会变怪：把文字反回来 */
+    .tag.memento:hover .title,
+    .tag.memento:hover .sub{
+      filter: invert(1);
     }
 
-    /* 反转后文字也会反转，因此在 hover 时把文字再拉回“可读”风格 */
-    .memento:hover .kicker,
-    .memento:hover .title,
-    .memento:hover .desc{
-      filter: invert(1); /* 抵消父级 invert，让文字保持正常观感 */
-    }
-
-    /* =========================================================
-       2) Shutter：只出现裂痕叠加层（不切图、不用背景图）
-       ========================================================= */
-    .crack-overlay{
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .22s ease;
-      z-index: 2;
-    }
-
-    /* 主裂缝（中心竖裂） */
-    .crack-overlay::before{
+    /* 2) Shutter：裂痕叠加层 */
+    .tag.shutter::after{
       content:"";
-      position: absolute;
-      top: -12%;
-      bottom: -12%;
-      left: 50%;
-      width: 2px;
-      transform: translateX(-50%) scaleY(0);
-      transition: transform .38s cubic-bezier(.2,.8,.2,1);
-      background: linear-gradient(
-        to bottom,
-        rgba(255,255,255,0),
-        rgba(255,255,255,0.92),
-        rgba(255,255,255,0)
-      );
-      opacity: 0.95;
-    }
+      position:absolute;
+      inset:0;
+      opacity:0;
+      transition: opacity .18s ease;
+      pointer-events:none;
 
-    /* 辅助裂纹（多方向细裂） */
-    .crack-overlay::after{
-      content:"";
-      position: absolute;
-      inset: 0;
       background:
-        linear-gradient(115deg, transparent 48%, rgba(255,255,255,0.55) 50%, transparent 52%),
-        linear-gradient(65deg,  transparent 46%, rgba(255,255,255,0.35) 48%, transparent 50%),
-        linear-gradient(160deg, transparent 49%, rgba(255,255,255,0.30) 51%, transparent 53%),
-        linear-gradient(25deg,  transparent 62%, rgba(255,255,255,0.22) 63%, transparent 64%);
-      opacity: 0.70;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.18));
+        linear-gradient(115deg, transparent 48%, rgba(0,0,0,0.35) 50%, transparent 52%),
+        linear-gradient(65deg,  transparent 46%, rgba(0,0,0,0.22) 48%, transparent 50%),
+        linear-gradient(160deg, transparent 49%, rgba(0,0,0,0.20) 51%, transparent 53%);
+      mix-blend-mode: multiply;
     }
 
-    .shutter:hover .crack-overlay{
-      opacity: 1;
+    .tag.shutter:hover::after{
+      opacity: 0.9;
     }
 
-    .shutter:hover .crack-overlay::before{
-      transform: translateX(-50%) scaleY(1);
-    }
+    /* 3) Sports：快速扫过的一条线（非常明显） */
+    .tag.sports::before{
+      content:"";
+      position:absolute;
+      top:-60%;
+      bottom:-60%;
+      width: 55%;
+      left:-70%;
+      opacity:0;
+      pointer-events:none;
 
-    /* =========================================================
-       3) Sports shooting：一条快速滑过的线（速度线 sweep）
-       ========================================================= */
-    .sports .sweep{
-      position: absolute;
-      inset: -40%;
-      z-index: 2;
-      pointer-events: none;
-
-      /* 一条“亮线 + 软边” */
       background: linear-gradient(
         110deg,
-        rgba(255,255,255,0) 45%,
-        rgba(255,255,255,0.85) 49%,
-        rgba(255,255,255,0) 53%
+        rgba(255,255,255,0) 40%,
+        rgba(255,255,255,0.95) 49%,
+        rgba(255,255,255,0) 58%
       );
-
-      opacity: 0;
-      transform: translateX(-80%) rotate(10deg);
-      transition: opacity .15s ease;
-      filter: drop-shadow(0 14px 22px rgba(0,0,0,0.18));
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.18));
+      transform: rotate(10deg);
     }
 
-    .sports:hover .sweep{
-      opacity: 1;
-      animation: sweepLine .55s cubic-bezier(.2,.8,.2,1) 1;
+    .tag.sports:hover::before{
+      opacity:1;
+      animation: sweep .55s cubic-bezier(.2,.8,.2,1) 1;
     }
 
-    @keyframes sweepLine{
-      0%   { transform: translateX(-85%) rotate(10deg); opacity: 0; }
-      12%  { opacity: 1; }
-      100% { transform: translateX(85%) rotate(10deg); opacity: 0; }
+    @keyframes sweep{
+      0%   { left: -70%; }
+      100% { left: 120%; }
     }
 
-    /* sports 文案微动，增强速度感 */
-    .sports:hover .title{
-      transform: translateX(3px);
-    }
+    /* 4) Contact：不变（只弹出副标题，不加额外特效） */
 
-    /* =========================================================
-       4) Contact：不变
-       说明：如果你希望“完全不动”，把下面 contact 的 hover 样式删掉即可
-       ========================================================= */
-    .contact:hover{
-      /* 你说 contact 不变：这里我只保留与其他卡片一致的轻微抬起。
-         如果你要完全不动：删掉这一段即可 */
-      transform: translateY(-2px);
+    /* 手机：改为单列 */
+    @media (max-width: 800px){
+      .hero h1{ font-size: 44px; }
+      .hero p{ font-size: 20px; }
+      .dock{ min-height: 0; }
+
+      .dock-grid{ grid-template-columns: 1fr; }
+      .col.right .tag{ margin-left: 0; }
+      .tag{ width: 100%; }
     }
   </style>
 </head>
 
 <body>
-  <div class="page-overlay"></div>
-
-  <div class="wrap">
+  <header class="hero">
     <h1>Yu Zeng Photography</h1>
-    <p class="tagline">Let's extract some memory</p>
+    <p>Let's extract some memory</p>
+  </header>
 
-    <section class="grid">
-      <!-- Memento -->
-      <!-- 你可以改成 memento.html；如果你还没建，就先指向 event.html 也可以 -->
-      <a class="panel memento" href="memento.html">
-        <div class="content">
-          <div class="kicker">Memento</div>
-          <h2 class="title">Memento</h2>
-          <p class="desc">A collection of places, people, and small things worth keeping.</p>
-        </div>
-      </a>
+  <main class="dock">
+    <div class="dock-grid">
+      <!-- 左侧两块 -->
+      <div class="col left">
+        <a class="tag memento" href="memento.html">
+          <div class="title">Memento</div>
+          <div class="sub">A collection of places, people, and small things worth keeping.</div>
+        </a>
 
-      <!-- Shutter -->
-      <a class="panel shutter" href="shutter.html">
-        <div class="crack-overlay"></div>
-        <div class="content">
-          <div class="kicker">Shutter</div>
-          <h2 class="title">Shutter</h2>
-          <p class="desc">Portraits and quiet moments—captured with intention.</p>
-        </div>
-      </a>
+        <a class="tag sports" href="sport.html">
+          <div class="title">Sports shooting</div>
+          <div class="sub">Speed, impact, and the split second that tells the story.</div>
+        </a>
+      </div>
 
-      <!-- Sports shooting -->
-      <a class="panel sports" href="sport.html">
-        <div class="sweep"></div>
-        <div class="content">
-          <div class="kicker">Sports shooting</div>
-          <h2 class="title">Sports shooting</h2>
-          <p class="desc">Speed, impact, and the split second that tells the story.</p>
-        </div>
-      </a>
+      <!-- 右侧两块 -->
+      <div class="col right">
+        <a class="tag shutter" href="shutter.html">
+          <div class="title">Shutter</div>
+          <div class="sub">Portraits and quiet moments—captured with intention.</div>
+        </a>
 
-      <!-- Contact (unchanged) -->
-      <a class="panel contact" href="contact.html">
-        <div class="content">
-          <div class="kicker">Contact</div>
-          <h2 class="title">Contact</h2>
-          <p class="desc">Create some memory? Contact here.</p>
-        </div>
-      </a>
-    </section>
-  </div>
+        <a class="tag contact" href="contact.html">
+          <div class="title">Contact</div>
+          <div class="sub">Create some memory? Contact here.</div>
+        </a>
+      </div>
+    </div>
+  </main>
 </body>
 </html>
