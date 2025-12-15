@@ -119,6 +119,41 @@ body{
 .marker.right .side-text{
   text-align: right;
 }
+ .scroll-down{
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #222;
+}
+
+.scroll-down span{
+  font-family: Georgia, serif;
+  font-size: 16px;
+  opacity: 0.85;
+}
+
+.scroll-down button{
+  border: none;
+  background: none;
+  font-size: 26px;
+  cursor: pointer;
+  animation: bounce 1.6s infinite;
+}
+
+/* 小动画，呼吸感 */
+@keyframes bounce{
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(6px); }
+}
+
+/* 手机端稍微小一点 */
+@media (max-width: 820px){
+  .scroll-down span{ font-size: 14px; }
+  .scroll-down button{ font-size: 22px; }
+}
+
 
 /* ===== Mobile ===== */
 @media (max-width: 820px){
@@ -226,6 +261,12 @@ body{
     <span class="title">Contact</span>
     <span class="side-text">Create some memory? Contact here.</span>
   </a>
+
+  <div class="scroll-down">
+  <span>Click here to see why this website exists</span>
+  <button onclick="scrollNext()">⬇</button>
+</div>
+
 
 </main>
 
