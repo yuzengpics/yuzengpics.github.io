@@ -18,16 +18,26 @@
       margin:0;
       font-family:'Poppins', Arial, sans-serif;
       min-height:100vh;
-
-      background-image:url('photo_x/background_x.jpg');
-      background-size:cover;
-      background-position:center;
-      background-attachment:fixed;
       color:#111;
 
       /* ✅ 一滚就吸附到下一页 */
       scroll-snap-type: y mandatory;
       overflow-y: scroll;
+
+      /* ✅ 不再用 body 的 background（手机端会“用完”） */
+      background: transparent;
+      position: relative;
+    }
+
+    /* ✅ 全站统一背景：固定铺满屏幕（手机/电脑都延续到所有页面） */
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: url('photo_x/background_x.jpg') center / cover no-repeat;
+      /* 轻微优化滚动性能 */
+      transform: translateZ(0);
     }
 
     /* ===== Header ===== */
@@ -35,7 +45,6 @@
       text-align:center;
       padding: 52px 20px 10px;
 
-      /* ✅ 第一页占满屏 + 吸附点 */
       min-height: 100vh;
       scroll-snap-align: start;
 
@@ -75,7 +84,7 @@
       transform: translateY(2px);
     }
 
-    /* ✅ 放在封面底部的向下提示（不属于第二页） */
+    /* ✅ 封面底部向下提示 */
     .scroll-down{
       margin-top: 36px;
       display: flex;
@@ -89,6 +98,7 @@
       font-family: Georgia, serif;
       font-size: 16px;
       opacity: 0.85;
+      text-align: center;
     }
 
     .scroll-down button{
@@ -114,19 +124,14 @@
       grid-template-columns: 1fr 1fr;
       row-gap: 60px;
 
-      /* ✅ 第二页吸附点 */
       scroll-snap-align: start;
-
-      /* 让第二页也有“页感” */
       min-height: 100vh;
       align-content: center;
     }
 
-    /* Left / right placement */
     .marker.left{ justify-self: start; }
     .marker.right{ justify-self: end; }
 
-    /* ===== Marker ===== */
     .marker{
       display: inline-flex;
       align-items: center;
@@ -156,7 +161,6 @@
       box-shadow: 0 18px 44px rgba(0,0,0,0.40);
     }
 
-    /* Title */
     .marker .title{
       font-size: 28px;
       font-weight: 700;
@@ -164,7 +168,6 @@
       white-space: nowrap;
     }
 
-    /* Subtitle (desktop: hidden until hover) */
     .marker .side-text{
       font-size: 14px;
       line-height: 1.4;
@@ -183,7 +186,6 @@
       max-width: 360px;
     }
 
-    /* Right column reads nicer if reversed (desktop only) */
     .marker.right{
       flex-direction: row-reverse;
     }
@@ -193,14 +195,13 @@
 
     /* ===== Mobile ===== */
     @media (max-width: 820px){
-
-      /* mobile background behavior */
-      body{
+      /* ✅ 手机端想看到更多“海”：只改 position，不改 size（依旧 cover） */
+      body::before{
         background-position: center top;
-        background-repeat: no-repeat;
-        background-size: 260% auto;
+      }
 
-        /* ✅ 手机端更舒服：不要强制 snap（你要的话我也可以保留） */
+      /* ✅ 手机端吸附弱一点 */
+      body{
         scroll-snap-type: y proximity;
       }
 
@@ -220,7 +221,6 @@
       .scroll-down span{ font-size: 14px; }
       .scroll-down button{ font-size: 22px; }
 
-      /* 2 columns -> 1 column */
       .cliff-dock{
         grid-template-columns: 1fr;
         row-gap: 22px;
@@ -232,25 +232,19 @@
         justify-self: center;
       }
 
-      /* stack title + subtitle vertically on mobile */
       .marker{
         flex-direction: column;
         align-items: center;
         text-align: center;
         width: min(88vw, 520px);
-
-        /* ✅ 修正你拼错的 background */
         background: rgba(0,0,0,0.34);
-
         gap: 6px;
       }
 
-      /* override desktop row-reverse */
       .marker.right{
         flex-direction: column;
       }
 
-      /* subtitle visible on mobile */
       .marker .side-text{
         opacity: 1;
         max-width: 100%;
@@ -262,7 +256,6 @@
 </head>
 
 <body>
-
   <header class="hero">
     <h1 class="hero-title">
       Yu Zeng Photography
@@ -270,7 +263,6 @@
     </h1>
     <p>Let's extract some memory</p>
 
-    <!-- ✅ 这个必须放在 hero 里（封面页底部） -->
     <div class="scroll-down">
       <span>Scroll to see why this website exists, and some stupid things I want to say</span>
       <button onclick="scrollNext()">⬇</button>
@@ -304,6 +296,5 @@
       document.getElementById('dock').scrollIntoView({ behavior: 'smooth' });
     }
   </script>
-
 </body>
 </html>
