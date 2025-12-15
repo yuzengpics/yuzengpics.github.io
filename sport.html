@@ -1,27 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sport – Yu Zeng Photography</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
 
-<!-- EXACT SAME CSS AS SHUTTER -->
-<!-- Only hero background + text change -->
+<style>
+*{ box-sizing:border-box; }
 
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#e9edf2;
+  color:#111;
+}
+
+/* ===== Navbar ===== */
+.navbar{
+  position:fixed;
+  top:0; left:0; right:0;
+  height:72px;
+  background:rgba(10,20,35,0.94);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  z-index:2000;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.nav-inner{
+  max-width:1200px;
+  height:100%;
+  margin:0 auto;
+  padding:0 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 16px;
+}
+
+/* ===== Brand ===== */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  text-decoration:none;
+}
+
+.brand-logo{
+  height:48px;
+  width:auto;
+}
+
+.brand-text{
+  display:flex;
+  flex-direction:column;
+  line-height:1;
+}
+
+.brand-name{
+  font-family:"Montserrat",sans-serif;
+  font-weight:700;
+  font-size:17px;
+  letter-spacing:1.6px;
+  color:#fff;
+}
+
+.brand-sub{
+  margin-top:4px;
+  font-family:"Playfair Display",serif;
+  font-style:italic;
+  font-size:14px;
+  color:rgba(255,255,255,0.8);
+}
+
+/* ===== Nav links ===== */
+.nav-links{
+  display:flex;
+  gap:34px;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap: wrap;
+}
+
+.nav-links a{
+  color:rgba(255,255,255,0.85);
+  text-decoration:none;
+  font-size:16px;
+  padding:6px 0;
+  border-bottom:2px solid transparent;
+  white-space:nowrap;
+}
+
+.nav-links a:hover{ color:#fff; }
+.nav-links a.active{
+  color:#fff;
+  border-bottom-color:#fff;
+}
+
+/* ===== Hero ===== */
+.hero{
+  margin-top:72px;
+  padding:110px 0 80px;
+  text-align:center;
+  color:#fff;
+  background:
+    linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)),
+    url("photo_x/S_x.jpg") center/cover no-repeat;   /* ← 这里换你的 Sport 封面 */
+}
+
+.hero h1{
+  margin:0 0 10px;
+  font-size:56px;
+}
+
+.hero p{
+  margin:0;
+  font-size:18px;
+  opacity:.9;
+}
+
+/* ===== Page container ===== */
+main.page{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+
+/* ===== Masonry (album covers) ===== */
+.masonry{
+  column-count: 3;
+  column-gap: 16px;
+}
+@media (max-width: 950px){ .masonry{ column-count: 2; } }
+@media (max-width: 650px){ .masonry{ column-count: 1; } }
+
+.album{
+  break-inside: avoid;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.album img{
+  width: 100%;
+  display:block;
+  border-radius: 12px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.album:hover img{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.14);
+}
+
+.album p{
+  margin: 8px 0 0;
+  text-align:center;
+  font-size: 14px;
+  color:#444;
+}
+
+/* ===== Lightbox (carousel) ===== */
+.lightbox{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.86);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 3000;
+  padding: 20px;
+}
+.lightbox.open{ display:flex; }
+
+.lightbox img{
+  max-width: 92vw;
+  max-height: 80vh;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+}
+
+.lightbox .caption{
+  color: #fff;
+  margin-top: 12px;
+  text-align: center;
+  max-width: 920px;
+  line-height: 1.55;
+  font-size: 15px;
+  opacity: 0.95;
+}
+
+.lb-close, .lb-prev, .lb-next{
+  position: absolute;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  font-size: 26px;
+  line-height: 40px;
+  cursor: pointer;
+  user-select: none;
+}
+.lb-close{ top: 18px; right: 22px; font-size: 30px; line-height: 38px; }
+.lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
+.lb-next{ right: 18px; top: 50%; transform: translateY(-50%); }
+
+/* ===== Mobile ===== */
+@media (max-width:700px){
+  .navbar{ height:64px; }
+  .nav-inner{ padding:0 18px; }
+
+  .brand-logo{ height:28px; }
+
+  .nav-links{
+    gap:16px;
+    overflow-x:auto;
+    max-width:70vw;
+    scrollbar-width:none;
+    flex-wrap: nowrap;
+  }
+  .nav-links::-webkit-scrollbar{ display:none; }
+  .nav-links a{ font-size:13px; }
+
+  .hero{
+    margin-top:64px;
+    padding:90px 0 60px;
+  }
+  .hero h1{ font-size:40px; }
+  .hero p{ font-size:16px; }
+}
+</style>
 </head>
 
 <body>
+
 <nav class="navbar">
   <div class="nav-inner">
     <a class="brand" href="index.html">
-      <img src="photo_x/Logo.png" class="brand-logo">
+      <img src="photo_x/Logo.png" alt="Yu Zeng logo" class="brand-logo">
       <div class="brand-text">
         <span class="brand-name">Yu Zeng</span>
         <span class="brand-sub">Photography</span>
       </div>
     </a>
+
     <div class="nav-links">
       <a href="index.html">Home</a>
       <a href="memento.html">Memento</a>
@@ -32,37 +260,124 @@
   </div>
 </nav>
 
-<header class="hero" style="
-  background:
-    linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),
-    url('photo_x/Sport_x.jpg') center/cover no-repeat;
-">
+<header class="hero">
   <h1>Sport</h1>
-  <p>Speed, power, and movement.</p>
+  <p>Climbing, football, ski and more.</p>
 </header>
 
 <main class="page">
   <div class="masonry">
 
+    <!-- 示例 1：攀岩（封面一张，里面多张） -->
     <div class="album"
-      data-title="Climbing"
-      data-caption="Stone, hands, gravity."
-      data-images="photos/C1.jpg,photos/C2.jpg,photos/C3.jpg">
-      <img src="photo_x/C1_x.jpg">
+         data-title="Climbing"
+         data-caption="Stone, hands, gravity."
+         data-images="photos/CL_0001.jpg,photos/CL_0002.jpg,photos/CL_0003.jpg">
+      <img src="photo_x/CL_0001_x.jpg" alt="Climbing cover">
       <p>Climbing</p>
     </div>
 
+    <!-- 示例 2：滑雪 -->
+    <div class="album"
+         data-title="Ski"
+         data-caption="Cold air, sharp turns."
+         data-images="photos/SKI_0001.jpg,photos/SKI_0002.jpg,photos/SKI_0003.jpg">
+      <img src="photo_x/SKI_0001_x.jpg" alt="Ski cover">
+      <p>Ski</p>
+    </div>
+
+    <!-- 继续按这个格式加更多 album -->
+
   </div>
 
-  <div id="lightbox" class="lightbox">
-    <button class="lb-close">&times;</button>
-    <button class="lb-prev">&#8249;</button>
-    <img id="lb-img">
-    <button class="lb-next">&#8250;</button>
+  <!-- 通用轮播 lightbox -->
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button class="lb-close" aria-label="Close">&times;</button>
+    <button class="lb-prev" aria-label="Previous">&#8249;</button>
+
+    <img id="lb-img" src="" alt="">
+
+    <button class="lb-next" aria-label="Next">&#8250;</button>
     <div class="caption" id="lb-caption"></div>
   </div>
 </main>
 
-<script src="lightbox.js"></script>
+<script>
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbCaption = document.getElementById('lb-caption');
+  const btnClose = document.querySelector('.lb-close');
+  const btnPrev = document.querySelector('.lb-prev');
+  const btnNext = document.querySelector('.lb-next');
+
+  let images = [];
+  let index = 0;
+  let title = '';
+  let caption = '';
+
+  function render(){
+    if(!images.length) return;
+    lbImg.src = images[index];
+    const counter = `${index + 1}/${images.length}`;
+    lbImg.alt = title ? `${title} (${counter})` : `Photo ${counter}`;
+    lbCaption.textContent = title
+      ? `${title} — ${counter}${caption ? " · " + caption : ""}`
+      : counter;
+  }
+
+  function openLightbox(list, t, c){
+    images = list;
+    index = 0;
+    title = t || '';
+    caption = c || '';
+    render();
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox(){
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+
+  function prev(){
+    if(images.length <= 1) return;
+    index = (index - 1 + images.length) % images.length;
+    render();
+  }
+
+  function next(){
+    if(images.length <= 1) return;
+    index = (index + 1) % images.length;
+    render();
+  }
+
+  document.querySelectorAll('.album').forEach(card => {
+    card.addEventListener('click', () => {
+      const list = (card.dataset.images || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      if(!list.length) return;
+      openLightbox(list, card.dataset.title, card.dataset.caption);
+    });
+  });
+
+  btnClose.addEventListener('click', closeLightbox);
+  btnPrev.addEventListener('click', prev);
+  btnNext.addEventListener('click', next);
+
+  lb.addEventListener('click', (e) => { if(e.target === lb) closeLightbox(); });
+
+  window.addEventListener('keydown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if(e.key === 'Escape') closeLightbox();
+    if(e.key === 'ArrowLeft') prev();
+    if(e.key === 'ArrowRight') next();
+  });
+</script>
+
 </body>
 </html>
