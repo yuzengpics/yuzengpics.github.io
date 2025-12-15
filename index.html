@@ -18,33 +18,22 @@
       margin:0;
       font-family:'Poppins', Arial, sans-serif;
       min-height:100vh;
+
+      background-image:url('photo_x/background_x.jpg');
+      background-size:cover;
+      background-position:center;
+      background-attachment:fixed;
+      background-repeat:no-repeat;
+
       color:#111;
 
-      /* ✅ 一滚就吸附到下一页 */
+      /* snap 两屏 */
       scroll-snap-type: y mandatory;
       overflow-y: scroll;
-
-      /* ✅ 不再用 body 的 background（手机端会“用完”） */
-      background: transparent;
-      position: relative;
     }
 
-    /* ✅ 全站统一背景：固定铺满屏幕（手机/电脑都延续到所有页面） */
-    body::before{
-      content:"";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background: url('photo_x/background_x.jpg') center / cover no-repeat;
-      /* 轻微优化滚动性能 */
-      transform: translateZ(0);
-    }
-
-    /* ===== Header ===== */
+    /* ========== 第一屏：封面+标题+分类+scroll 提示 ========== */
     .hero{
-      text-align:center;
-      padding: 52px 20px 10px;
-
       min-height: 100vh;
       scroll-snap-align: start;
 
@@ -52,6 +41,9 @@
       flex-direction:column;
       justify-content:center;
       align-items:center;
+
+      padding: 52px 20px 26px;
+      text-align:center;
     }
 
     .hero h1{
@@ -59,6 +51,7 @@
       font-size:64px;
       font-weight:700;
       letter-spacing:0.2px;
+      color:#111;
       text-shadow: 0 2px 18px rgba(255,255,255,0.65);
     }
 
@@ -67,6 +60,7 @@
       font-family: Georgia, serif;
       font-size:26px;
       opacity:0.92;
+      color:#111;
       text-shadow: 0 2px 18px rgba(255,255,255,0.65);
     }
 
@@ -84,49 +78,18 @@
       transform: translateY(2px);
     }
 
-    /* ✅ 封面底部向下提示 */
-    .scroll-down{
-      margin-top: 36px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      color: #222;
-    }
-
-    .scroll-down span{
-      font-family: Georgia, serif;
-      font-size: 16px;
-      opacity: 0.85;
-      text-align: center;
-    }
-
-    .scroll-down button{
-      border: none;
-      background: none;
-      font-size: 26px;
-      cursor: pointer;
-      animation: bounce 1.6s infinite;
-    }
-
-    @keyframes bounce{
-      0%,100%{ transform: translateY(0); }
-      50%{ transform: translateY(6px); }
-    }
-
-    /* ===== Dock grid (desktop) ===== */
+    /* ========== 分类按钮区域（仍然属于第一屏） ========== */
     .cliff-dock{
+      width: 100%;
       max-width: 1100px;
-      margin: 0 auto;
-      padding: 120px 20px 120px;
+
+      margin: 70px auto 0;      /* 标题到分类的距离 */
+      padding: 0 20px;
 
       display: grid;
       grid-template-columns: 1fr 1fr;
       row-gap: 60px;
-
-      scroll-snap-align: start;
-      min-height: 100vh;
-      align-content: center;
+      align-items: center;
     }
 
     .marker.left{ justify-self: start; }
@@ -145,7 +108,6 @@
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       border: 1px solid rgba(255,255,255,0.18);
-
       box-shadow: 0 14px 34px rgba(0,0,0,0.35);
 
       width: fit-content;
@@ -186,6 +148,7 @@
       max-width: 360px;
     }
 
+    /* 右边：标题在外侧更顺眼（桌面） */
     .marker.right{
       flex-direction: row-reverse;
     }
@@ -193,18 +156,87 @@
       text-align: right;
     }
 
-    /* ===== Mobile ===== */
+    /* ========== Scroll 提示（放在分类下面，白字，居中，不动） ========== */
+    .scroll-down{
+      margin-top: 46px;   /* 分类到提示距离 */
+      text-align: center;
+      color: #fff;
+    }
+
+    .scroll-down span{
+      display:block;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0.3px;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.55);
+    }
+
+    .scroll-down .arrow{
+      margin-top: 10px;
+      font-size: 30px;
+      line-height: 1;
+      opacity: 0.95;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.55);
+    }
+
+    /* ========== 第二屏：你想说的话（可编辑区域） ========== */
+    .manifesto{
+      min-height: 100vh;
+      scroll-snap-align: start;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      padding: 90px 20px;
+      color: #fff;
+    }
+
+    .manifesto::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      /* 让文字可读的轻微暗层（不换背景图） */
+      background: linear-gradient(
+        rgba(0,0,0,0.38),
+        rgba(0,0,0,0.25)
+      );
+      z-index: -1;
+    }
+
+    .manifesto-inner{
+      width: min(920px, 92vw);
+      text-align: center;
+    }
+
+    .manifesto-inner h2{
+      margin: 0 0 14px;
+      font-size: 42px;
+      letter-spacing: 0.2px;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.45);
+    }
+
+    .manifesto-inner p{
+      margin: 0 auto;
+      font-size: 18px;
+      line-height: 1.8;
+      opacity: 0.95;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.45);
+      max-width: 78ch;
+    }
+
+    /* ========== Mobile ========== */
     @media (max-width: 820px){
-      /* ✅ 手机端想看到更多“海”：只改 position，不改 size（依旧 cover） */
-      body::before{
-        background-position: center top;
-      }
 
-      /* ✅ 手机端吸附弱一点 */
+      /* 手机端背景：别只剩山，给你更多海（你可微调 220%） */
       body{
-        scroll-snap-type: y proximity;
+        background-position: center top;
+        background-size: 240% auto;
+        background-attachment: scroll; /* iOS 更稳定 */
       }
 
+      /* 第一屏标题更小一点 */
       .hero{
         padding: 18px 14px 18px;
       }
@@ -218,13 +250,11 @@
         font-size: 15px;
       }
 
-      .scroll-down span{ font-size: 14px; }
-      .scroll-down button{ font-size: 22px; }
-
+      /* 分类：一列竖排 */
       .cliff-dock{
         grid-template-columns: 1fr;
         row-gap: 22px;
-        padding: 70px 20px 90px;
+        margin-top: 48px;
       }
 
       .marker.left,
@@ -237,25 +267,49 @@
         align-items: center;
         text-align: center;
         width: min(88vw, 520px);
-        background: rgba(0,0,0,0.34);
         gap: 6px;
+        background: rgba(0,0,0,0.34);
       }
 
+      /* override 桌面 row-reverse */
       .marker.right{
         flex-direction: column;
       }
 
+      /* 手机端副标题直接显示 */
       .marker .side-text{
         opacity: 1;
         max-width: 100%;
         overflow: hidden;
         white-space: nowrap;
       }
+
+      .scroll-down{
+        margin-top: 26px;
+      }
+      .scroll-down span{
+        font-size: 15px;
+      }
+      .scroll-down .arrow{
+        font-size: 26px;
+      }
+
+      .manifesto{
+        padding: 70px 18px;
+      }
+      .manifesto-inner h2{
+        font-size: 28px;
+      }
+      .manifesto-inner p{
+        font-size: 16px;
+      }
     }
   </style>
 </head>
 
 <body>
+
+  <!-- 第一屏 -->
   <header class="hero">
     <h1 class="hero-title">
       Yu Zeng Photography
@@ -263,38 +317,56 @@
     </h1>
     <p>Let's extract some memory</p>
 
-    <div class="scroll-down">
-      <span>Scroll to see why this website exists, and some stupid things I want to say</span>
-      <button onclick="scrollNext()">⬇</button>
+    <div class="cliff-dock">
+      <a class="marker left" href="memento.html">
+        <span class="title">Memento</span>
+        <span class="side-text">A collection of places, people, and stories.</span>
+      </a>
+
+      <a class="marker right" href="shutter.html">
+        <span class="title">Shutter</span>
+        <span class="side-text">Pieces, no theme.</span>
+      </a>
+
+      <a class="marker left" href="sport.html">
+        <span class="title">Sport</span>
+        <span class="side-text">Climbing, football, ski and more.</span>
+      </a>
+
+      <a class="marker right" href="contact.html">
+        <span class="title">Contact</span>
+        <span class="side-text">Create some memory? Contact here.</span>
+      </a>
+    </div>
+
+    <div class="scroll-down" onclick="scrollNext()" role="button" aria-label="Scroll to next section" tabindex="0">
+      <span>Scroll to see why this website exists</span>
+      <div class="arrow">↓</div>
     </div>
   </header>
 
-  <main class="cliff-dock" id="dock">
-    <a class="marker left" href="memento.html">
-      <span class="title">Memento</span>
-      <span class="side-text">A collection of places, people, and stories.</span>
-    </a>
-
-    <a class="marker right" href="shutter.html">
-      <span class="title">Shutter</span>
-      <span class="side-text">Pieces, no theme.</span>
-    </a>
-
-    <a class="marker left" href="sport.html">
-      <span class="title">Sport</span>
-      <span class="side-text">Climbing, football, ski and more.</span>
-    </a>
-
-    <a class="marker right" href="contact.html">
-      <span class="title">Contact</span>
-      <span class="side-text">Create some memory? Contact here.</span>
-    </a>
-  </main>
+  <!-- 第二屏：这里就是你要编辑“想说的话”的地方 -->
+  <section class="manifesto" id="manifesto">
+    <div class="manifesto-inner">
+      <h2>Why this website exists</h2>
+      <p>
+        <!-- 你就在这里改文字 -->
+        I take photos to remember what I felt, who I met, and the small things that mattered.
+        This website is a place to keep those moments — simple, honest, and mine.
+      </p>
+    </div>
+  </section>
 
   <script>
     function scrollNext(){
-      document.getElementById('dock').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('manifesto').scrollIntoView({ behavior: 'smooth' });
     }
+
+    // 让键盘回车也能触发（无障碍）
+    document.querySelector('.scroll-down')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') scrollNext();
+    });
   </script>
+
 </body>
 </html>
