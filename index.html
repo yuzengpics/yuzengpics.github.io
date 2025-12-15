@@ -7,268 +7,303 @@
   <title>Yu Zeng Photography</title>
 
   <style>
-   *{ box-sizing:border-box; }
+    *{ box-sizing:border-box; }
 
-body{
-  margin:0;
-  font-family:'Poppins', Arial, sans-serif;
-  min-height:100vh;
+    html, body{
+      height: 100%;
+      scroll-behavior: smooth;
+    }
 
-  background-image:url('photo_x/background_x.jpg');
-  background-size:cover;
-  background-position:center;
-  background-attachment:fixed;
-  color:#111;
-}
+    body{
+      margin:0;
+      font-family:'Poppins', Arial, sans-serif;
+      min-height:100vh;
 
-/* ===== Header ===== */
-.hero{
-  text-align:center;
-  padding: 52px 20px 10px;
-}
-.hero h1{
-  margin:0;
-  font-size:64px;
-  font-weight:700;
-  letter-spacing:0.2px;
-  text-shadow: 0 2px 18px rgba(255,255,255,0.65);
-}
-.hero p{
-  margin:10px 0 0;
-  font-family: Georgia, serif;
-  font-size:26px;
-  opacity:0.92;
-  text-shadow: 0 2px 18px rgba(255,255,255,0.65);
-}
+      background-image:url('photo_x/background_x.jpg');
+      background-size:cover;
+      background-position:center;
+      background-attachment:fixed;
+      color:#111;
 
-/* ===== Dock grid (desktop) ===== */
-.cliff-dock{
-  max-width: 1100px;
-  margin: 140px auto 90px;
-  padding: 0 20px;
+      /* ✅ 一滚就吸附到下一页 */
+      scroll-snap-type: y mandatory;
+      overflow-y: scroll;
+    }
 
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  row-gap: 60px;
-}
+    /* ===== Header ===== */
+    .hero{
+      text-align:center;
+      padding: 52px 20px 10px;
 
-/* Left / right placement */
-.marker.left{ justify-self: start; }
-.marker.right{ justify-self: end; }
+      /* ✅ 第一页占满屏 + 吸附点 */
+      min-height: 100vh;
+      scroll-snap-align: start;
 
-/* ===== Marker ===== */
-.marker{
-  display: inline-flex;
-  align-items: center;
-  gap: 18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+    }
 
-  padding: 14px 22px;
-  border-radius: 18px;
-  text-decoration: none;
+    .hero h1{
+      margin:0;
+      font-size:64px;
+      font-weight:700;
+      letter-spacing:0.2px;
+      text-shadow: 0 2px 18px rgba(255,255,255,0.65);
+    }
 
-  background: rgba(0,0,0,0.48);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(255,255,255,0.18);
+    .hero p{
+      margin:10px 0 0;
+      font-family: Georgia, serif;
+      font-size:26px;
+      opacity:0.92;
+      text-shadow: 0 2px 18px rgba(255,255,255,0.65);
+    }
 
-  box-shadow: 0 14px 34px rgba(0,0,0,0.35);
-
-  width: fit-content;
-  max-width: 520px;
-
-  transition: background .2s ease,
-              box-shadow .2s ease,
-              max-width .28s ease;
-}
-
-.marker:hover{
-  background: rgba(0,0,0,0.56);
-  box-shadow: 0 18px 44px rgba(0,0,0,0.40);
-}
-
-/* Title */
-.marker .title{
-  font-size: 28px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-}
-
-/* Subtitle (desktop: hidden until hover) */
-.marker .side-text{
-  font-size: 14px;
-  line-height: 1.4;
-  color: rgba(255,255,255,0.85);
-  white-space: nowrap;
-
-  opacity: 0;
-  max-width: 0;
-  overflow: hidden;
-
-  transition: opacity .18s ease, max-width .28s ease;
-}
-.marker:hover .side-text{
-  opacity: 1;
-  max-width: 360px;
-}
-
-/* Right column reads nicer if reversed (desktop only) */
-.marker.right{
-  flex-direction: row-reverse;
-}
-.marker.right .side-text{
-  text-align: right;
-}
- .scroll-down{
-  margin-top: 36px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: #222;
-}
-
-.scroll-down span{
-  font-family: Georgia, serif;
-  font-size: 16px;
-  opacity: 0.85;
-}
-
-.scroll-down button{
-  border: none;
-  background: none;
-  font-size: 26px;
-  cursor: pointer;
-  animation: bounce 1.6s infinite;
-}
-
-/* 小动画，呼吸感 */
-@keyframes bounce{
-  0%,100%{ transform: translateY(0); }
-  50%{ transform: translateY(6px); }
-}
-
-/* 手机端稍微小一点 */
-@media (max-width: 820px){
-  .scroll-down span{ font-size: 14px; }
-  .scroll-down button{ font-size: 22px; }
-}
-
-
-/* ===== Mobile ===== */
-@media (max-width: 820px){
-
-  /* mobile background behavior */
-  body{
-    background-position: center top;
-    background-repeat: no-repeat;
-    background-size: 260% auto;
-  }
-
-  /* hero smaller so you can see sea */
-  .hero{
-    padding: 18px 14px 6px;
-  }
-  .hero h1{
-    font-size: 24px;
-    letter-spacing: 0.1px;
-  }
-  
-  .hero p{
-    font-size: 15px;
-  }
-
-  /* 2 columns -> 1 column */
-  .cliff-dock{
-    grid-template-columns: 1fr;
-    row-gap: 22px;
-    margin-top: 48px; /* content higher on screen */
-  }
-
-  .marker.left,
-  .marker.right{
-    justify-self: center;
-  }
-
-  /* stack title + subtitle vertically on mobile */
-  .marker{
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    width: min(88vw, 520px);
-    ackground: rgba(0,0,0,0.34);
-    gap: 6px;
-  }
-
-  /* override desktop row-reverse */
-  .marker.right{
-    flex-direction: column;
-  }
-
-  /* subtitle visible on mobile */
-  .marker .side-text{
-    opacity: 1;
-    max-width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-}
     .hero-title{
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  white-space: nowrap;
-}
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      white-space: nowrap;
+    }
 
-.hero-logo{
-  height: 1.0em;      /* 关键：跟字体一样大 */
-  width: auto;
-  opacity: 0.95;
-  transform: translateY(2px); /* 视觉对齐，可删/微调 */
-}
+    .hero-logo{
+      height: 1em;
+      width: auto;
+      opacity: 0.95;
+      transform: translateY(2px);
+    }
 
+    /* ✅ 放在封面底部的向下提示（不属于第二页） */
+    .scroll-down{
+      margin-top: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #222;
+    }
 
+    .scroll-down span{
+      font-family: Georgia, serif;
+      font-size: 16px;
+      opacity: 0.85;
+    }
+
+    .scroll-down button{
+      border: none;
+      background: none;
+      font-size: 26px;
+      cursor: pointer;
+      animation: bounce 1.6s infinite;
+    }
+
+    @keyframes bounce{
+      0%,100%{ transform: translateY(0); }
+      50%{ transform: translateY(6px); }
+    }
+
+    /* ===== Dock grid (desktop) ===== */
+    .cliff-dock{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 120px 20px 120px;
+
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      row-gap: 60px;
+
+      /* ✅ 第二页吸附点 */
+      scroll-snap-align: start;
+
+      /* 让第二页也有“页感” */
+      min-height: 100vh;
+      align-content: center;
+    }
+
+    /* Left / right placement */
+    .marker.left{ justify-self: start; }
+    .marker.right{ justify-self: end; }
+
+    /* ===== Marker ===== */
+    .marker{
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+
+      padding: 14px 22px;
+      border-radius: 18px;
+      text-decoration: none;
+
+      background: rgba(0,0,0,0.48);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.18);
+
+      box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+
+      width: fit-content;
+      max-width: 520px;
+
+      transition: background .2s ease,
+                  box-shadow .2s ease,
+                  max-width .28s ease;
+    }
+
+    .marker:hover{
+      background: rgba(0,0,0,0.56);
+      box-shadow: 0 18px 44px rgba(0,0,0,0.40);
+    }
+
+    /* Title */
+    .marker .title{
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    /* Subtitle (desktop: hidden until hover) */
+    .marker .side-text{
+      font-size: 14px;
+      line-height: 1.4;
+      color: rgba(255,255,255,0.85);
+      white-space: nowrap;
+
+      opacity: 0;
+      max-width: 0;
+      overflow: hidden;
+
+      transition: opacity .18s ease, max-width .28s ease;
+    }
+
+    .marker:hover .side-text{
+      opacity: 1;
+      max-width: 360px;
+    }
+
+    /* Right column reads nicer if reversed (desktop only) */
+    .marker.right{
+      flex-direction: row-reverse;
+    }
+    .marker.right .side-text{
+      text-align: right;
+    }
+
+    /* ===== Mobile ===== */
+    @media (max-width: 820px){
+
+      /* mobile background behavior */
+      body{
+        background-position: center top;
+        background-repeat: no-repeat;
+        background-size: 260% auto;
+
+        /* ✅ 手机端更舒服：不要强制 snap（你要的话我也可以保留） */
+        scroll-snap-type: y proximity;
+      }
+
+      .hero{
+        padding: 18px 14px 18px;
+      }
+
+      .hero h1{
+        font-size: 24px;
+        letter-spacing: 0.1px;
+      }
+
+      .hero p{
+        font-size: 15px;
+      }
+
+      .scroll-down span{ font-size: 14px; }
+      .scroll-down button{ font-size: 22px; }
+
+      /* 2 columns -> 1 column */
+      .cliff-dock{
+        grid-template-columns: 1fr;
+        row-gap: 22px;
+        padding: 70px 20px 90px;
+      }
+
+      .marker.left,
+      .marker.right{
+        justify-self: center;
+      }
+
+      /* stack title + subtitle vertically on mobile */
+      .marker{
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: min(88vw, 520px);
+
+        /* ✅ 修正你拼错的 background */
+        background: rgba(0,0,0,0.34);
+
+        gap: 6px;
+      }
+
+      /* override desktop row-reverse */
+      .marker.right{
+        flex-direction: column;
+      }
+
+      /* subtitle visible on mobile */
+      .marker .side-text{
+        opacity: 1;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+    }
   </style>
 </head>
 
 <body>
+
   <header class="hero">
-   <h1 class="hero-title">
-  Yu Zeng Photography
-  <img src="photo_x/Logo2.png" alt="logo" class="hero-logo">
-</h1>
+    <h1 class="hero-title">
+      Yu Zeng Photography
+      <img src="photo_x/Logo2.png" alt="logo" class="hero-logo">
+    </h1>
     <p>Let's extract some memory</p>
+
+    <!-- ✅ 这个必须放在 hero 里（封面页底部） -->
+    <div class="scroll-down">
+      <span>Scroll to see why this website exists, and some stupid things I want to say</span>
+      <button onclick="scrollNext()">⬇</button>
+    </div>
   </header>
 
- <main class="cliff-dock">
+  <main class="cliff-dock" id="dock">
+    <a class="marker left" href="memento.html">
+      <span class="title">Memento</span>
+      <span class="side-text">A collection of places, people, and stories.</span>
+    </a>
 
-  <a class="marker left" href="memento.html">
-    <span class="title">Memento</span>
-    <span class="side-text">A collection of places, people, and stories.</span>
-  </a>
+    <a class="marker right" href="shutter.html">
+      <span class="title">Shutter</span>
+      <span class="side-text">Pieces, no theme.</span>
+    </a>
 
-  <a class="marker right" href="shutter.html">
-    <span class="title">Shutter</span>
-    <span class="side-text">Pieces, no theme.</span>
-  </a>
+    <a class="marker left" href="sport.html">
+      <span class="title">Sport</span>
+      <span class="side-text">Climbing, football, ski and more.</span>
+    </a>
 
-  <a class="marker left" href="sport.html">
-    <span class="title">Sport</span>
-    <span class="side-text">Climbing, football, ski and more.</span>
-  </a>
+    <a class="marker right" href="contact.html">
+      <span class="title">Contact</span>
+      <span class="side-text">Create some memory? Contact here.</span>
+    </a>
+  </main>
 
-  <a class="marker right" href="contact.html">
-    <span class="title">Contact</span>
-    <span class="side-text">Create some memory? Contact here.</span>
-  </a>
-
-  <div class="scroll-down">
-  <span>Click here to see why this website exists</span>
-  <button onclick="scrollNext()">⬇</button>
-</div>
-
-
-</main>
+  <script>
+    function scrollNext(){
+      document.getElementById('dock').scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
 
 </body>
 </html>
