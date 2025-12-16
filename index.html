@@ -3,13 +3,20 @@
 <head>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
+
+  <!-- ✅ iOS 必备：viewport-fit=cover 才能让 env(safe-area-*) 生效 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
   <title>Yu Zeng Photography</title>
 
   <style>
     *{ box-sizing:border-box; }
     html,body{ height:100%; scroll-behavior:smooth; }
 
+    /* ✅ JS 会写入：
+       --vh   : 可见视口高度的 1%
+       --ui-b : iPhone Chrome 底部工具栏“覆盖”高度（关键）
+    */
     :root{
       --vh: 1vh;
       --safe-b: env(safe-area-inset-bottom, 0px);
@@ -22,11 +29,13 @@
       font-family:'Poppins', Arial, sans-serif;
       min-height:100vh;
       background:#000;
+
       scroll-snap-type:y mandatory;
       overflow-y:scroll;
       -webkit-overflow-scrolling:touch;
     }
 
+    /* 背景图层 */
     body::after{
       content:"";
       position:fixed;
@@ -36,6 +45,7 @@
       transform: translateZ(0);
     }
 
+    /* 变暗层 */
     body::before{
       content:"";
       position:fixed;
@@ -50,6 +60,7 @@
 
     .screen{ position:relative; z-index:1; }
 
+    /* ✅ 真实可见高度：svh + JS 兜底 */
     .hero, .manifesto{
       min-height: 100vh;
       min-height: 100svh;
@@ -67,7 +78,9 @@
 
       padding: 36px 20px 0;
       text-align:center;
+      position:relative;
 
+      /* ✅ 给内容本身留出底部空间，避免“最后一行”也被遮 */
       padding-bottom: calc(var(--safe-b) + var(--ui-b) + 120px);
     }
 
@@ -109,7 +122,6 @@
       transform:translateY(2px);
     }
 
-    /* 分类按钮 */
     .cliff-dock{
       width:100%;
       max-width:1100px;
@@ -173,7 +185,7 @@
     .marker.right{ flex-direction:row-reverse; }
     .marker.right .side-text{ text-align:right; }
 
-    /* Scroll 提示 */
+    /* ✅ 关键改动：提示用 fixed，且 bottom 叠加 ui-b（Chrome 底栏覆盖高度） */
     .scroll-down{
       position:fixed;
       left:0; right:0;
@@ -244,15 +256,14 @@
 
     /* ===== Mobile ===== */
     @media (max-width: 820px){
-      .hero{ padding:16px 14px 0; padding-bottom: calc(var(--safe-b) + var(--ui-b) + 120px); }
+      .hero{ padding:16px 14px 0; padding-bottom: calc(var(--safe-b) + var(--ui-b) + 130px); }
       .hero h1{ font-size:24px; }
       .hero p{ font-size:15px; }
 
       .cliff-dock{
-        /* ✅ 只改这里：把分类块往上提（原来是 60px） */
-        margin-top: 35px;
         grid-template-columns:1fr;
         row-gap:22px;
+        margin-top:60px;
       }
 
       .marker.left,.marker.right{ justify-self:center; }
@@ -317,6 +328,7 @@
     </div>
   </header>
 
+  <!-- ✅ 提示移到 hero 外部（fixed 更合理），避免受 hero 高度/scroll-snap 影响 -->
   <div class="scroll-down" onclick="scrollNext()" role="button" tabindex="0">
     <span>Scroll to see why this website exists</span>
     <div class="arrow" aria-hidden="true">
@@ -351,13 +363,17 @@
       document.getElementById('manifesto').scrollIntoView({ behavior:'smooth' });
     }
 
+    // ✅ 核心：计算 iPhone Chrome 底部工具栏覆盖高度（ui-b）
     function setViewportVars(){
       const vv = window.visualViewport;
 
-      const visibleH = (vv && vv.height) ? vv.height : window.innerHeight;
+      // 1) 真实可见高度 -> --vh
+      const visibleH = vv && vv.height ? vv.height : window.innerHeight;
       document.documentElement.style.setProperty('--vh', (visibleH * 0.01) + 'px');
 
-      const uiB = (vv && vv.height) ? Math.max(0, window.innerHeight - vv.height) : 0;
+      // 2) 浏览器 UI 覆盖高度 -> --ui-b
+      // iOS 上常见：window.innerHeight > visualViewport.height（底部/顶部栏占用）
+      const uiB = vv && vv.height ? Math.max(0, window.innerHeight - vv.height) : 0;
       document.documentElement.style.setProperty('--ui-b', uiB + 'px');
     }
 
@@ -369,6 +385,28 @@
       window.visualViewport.addEventListener('scroll', setViewportVars);
     }
 
+    // 一滚切屏（保留你的逻辑）
+    let wheelLock = false;
+    window.addEventListener('wheel', (e) => {
+      if (wheelLock) return;
+
+      const y = window.scrollY;
+      const vh = window.innerHeight;
+      const down = e.deltaY > 0;
+
+      if (down && y < 0.2 * vh){
+        wheelLock = true;
+        scrollNext();
+        setTimeout(() => wheelLock = false, 800);
+      }
+      if (!down && y > 0.8 * vh && y < 1.3 * vh){
+        wheelLock = true;
+        document.getElementById('hero').scrollIntoView({ behavior:'smooth' });
+        setTimeout(() => wheelLock = false, 800);
+      }
+    }, { passive:true });
+
+    // 第二屏渐暗
     function updateDim(){
       const y = window.scrollY;
       const vh = window.innerHeight;
@@ -376,6 +414,13 @@
     }
     window.addEventListener('scroll', updateDim, { passive:true });
 
+    // load 初始化
+    window.addEventListener('load', () => {
+      setViewportVars();
+      updateDim();
+    });
+
+    // ✅ 进到第二屏后隐藏提示（避免一直挡内容）
     function toggleHint(){
       const y = window.scrollY;
       const vh = window.innerHeight;
@@ -386,12 +431,7 @@
       hint.style.transition = 'opacity .25s ease';
     }
     window.addEventListener('scroll', toggleHint, { passive:true });
-
-    window.addEventListener('load', () => {
-      setViewportVars();
-      updateDim();
-      toggleHint();
-    });
+    window.addEventListener('load', toggleHint);
   </script>
 </body>
 </html>
