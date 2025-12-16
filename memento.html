@@ -251,8 +251,45 @@ main.page{
   .hero h1{ font-size:40px; }
   .hero p{ font-size:16px; }
 
+  /* ====== 核心修复：只改手机端 ====== */
+
+  /* 1) 手机端 lightbox 不再整体滚动，避免 caption 把图“顶上去” */
+  .lightbox{
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+
+  /* 2) 图片区域永远居中（caption 不参与布局） */
+  .lightbox .lb-stage{
+    min-height: 100dvh;
+    justify-content: center;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  }
+
+  /* 3) 手机端图片高度：给底部 caption 面板预留空间 */
   .lightbox img{
-    max-height: calc(100dvh - 230px);
+    max-height: calc(100dvh - 180px); /* 顶部安全区+按钮+caption面板预留 */
+  }
+
+  /* 4) caption 变成底部固定面板，可滚动（不影响图片位置） */
+  .lightbox .caption{
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    margin: 0;
+    max-width: none;
+
+    padding: 14px 16px calc(env(safe-area-inset-bottom, 0px) + 14px);
+    max-height: 40vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    background: rgba(0,0,0,0.55);
+    border-top: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 }
 </style>
@@ -363,13 +400,13 @@ stayed at Finn&apos;s place watching dramas.'
   }
 
   function lockIfMobile(){
-    // ✅ desktop: never lock
+    // desktop: never lock
     if(!isMobileNow()) return;
 
     isSwitching = true;
     setNavDisabled(true);
 
-    // ✅ mobile: fallback unlock after 0.5s (not 1.5s)
+    // mobile fallback unlock after 0.5s
     if(unlockTimer) clearTimeout(unlockTimer);
     unlockTimer = setTimeout(() => {
       isSwitching = false;
@@ -379,7 +416,6 @@ stayed at Finn&apos;s place watching dramas.'
   }
 
   function unlock(){
-    // clear fallback timer
     if(unlockTimer){
       clearTimeout(unlockTimer);
       unlockTimer = null;
@@ -395,15 +431,12 @@ stayed at Finn&apos;s place watching dramas.'
     const counter = `${index + 1}/${images.length}`;
     lbImg.alt = title ? `${title} (${counter})` : `Photo ${counter}`;
 
-    // Fade out immediately
     lbImg.style.opacity = 0;
 
-    // Preload current + neighbors
     preload(images[safeIndex(index)]);
     preload(images[safeIndex(index + 1)]);
     preload(images[safeIndex(index - 1)]);
 
-    // ✅ only lock on mobile, and only 0.5s
     lockIfMobile();
 
     const tmp = new Image();
@@ -412,7 +445,6 @@ stayed at Finn&apos;s place watching dramas.'
     tmp.onload = () => {
       lbImg.src = src;
       requestAnimationFrame(() => { lbImg.style.opacity = 1; });
-      // ✅ image loaded: unlock immediately (mobile & desktop都安全)
       unlock();
     };
 
@@ -428,11 +460,13 @@ stayed at Finn&apos;s place watching dramas.'
       ? `${title} — ${counter}${caption ? " · " + caption : ""}`
       : counter;
 
-    // Keep close button reachable
+    // If lightbox is scrollable on desktop, keep close reachable
     lb.scrollTop = 0;
   }
 
   function openLightbox(list, t, c){
+    unlock(); // ensure no stale lock on desktop
+
     images = list;
     index = 0;
     title = t || '';
@@ -457,7 +491,6 @@ stayed at Finn&apos;s place watching dramas.'
 
   function prev(){
     if(images.length <= 1) return;
-    // ✅ desktop不锁；mobile才会拦截
     if(isMobileNow() && isSwitching) return;
     index = safeIndex(index - 1);
     render();
@@ -470,7 +503,6 @@ stayed at Finn&apos;s place watching dramas.'
     render();
   }
 
-  // Bind albums
   document.querySelectorAll('.album').forEach(card => {
     card.addEventListener('click', () => {
       const list = (card.dataset.images || '')
@@ -487,12 +519,10 @@ stayed at Finn&apos;s place watching dramas.'
   btnPrev.addEventListener('click', prev);
   btnNext.addEventListener('click', next);
 
-  // Click outside stage to close
   lb.addEventListener('click', (e) => {
     if(e.target === lb) closeLightbox();
   });
 
-  // Keyboard navigation
   window.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
     if(e.key === 'Escape') closeLightbox();
@@ -500,12 +530,17 @@ stayed at Finn&apos;s place watching dramas.'
     if(e.key === 'ArrowRight') next();
   });
 
+  // Important: if user rotates / resizes to desktop width, never keep lock
+  window.addEventListener('resize', () => {
+    if(!isMobileNow()) unlock();
+  });
+
   /* =========================
      Swipe support (mobile)
      ========================= */
   let startX = 0, startY = 0;
   let tracking = false;
-  let lockedDirection = null; // "x" | "y" | null
+  let lockedDirection = null;
   const SWIPE_MIN = 45;
   const LOCK_THRESHOLD = 10;
 
@@ -566,7 +601,6 @@ stayed at Finn&apos;s place watching dramas.'
   lb.addEventListener('touchmove', onTouchMove, { passive: false });
   lb.addEventListener('touchend', onTouchEnd, { passive: true });
 
-  // Optional: double-tap image to close
   let lastTap = 0;
   lbImg.addEventListener('touchend', () => {
     if(!lb.classList.contains('open')) return;
