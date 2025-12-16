@@ -369,7 +369,25 @@ If you like to dig deeper, I hope you will enjoy the journey with me/ my memorie
       document.body.classList.toggle('dim', y > 0.40 * vh);
     }
     window.addEventListener('scroll', updateDim, { passive:true });
-    window.addEventListener('load', updateDim);
+
+    // ✅ 修复：Chrome 手机端 + scroll-snap 首屏不显示 scroll hint
+    window.addEventListener('load', () => {
+      updateDim();
+
+      const ua = navigator.userAgent || "";
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+      const isChrome = /Chrome/i.test(ua) && !/CriOS/i.test(ua) && !/EdgiOS/i.test(ua);
+      // iOS Chrome 会是 CriOS，这里也可以一并处理；但你说的是 Chrome 手机端，就一起兜住
+      const isChromeLike = /Chrome|CriOS/i.test(ua);
+
+      if (isMobile && isChromeLike && window.scrollY === 0) {
+        // “唤醒”滚动系统（肉眼不可见）
+        requestAnimationFrame(() => {
+          window.scrollTo(0, 1);
+          requestAnimationFrame(() => window.scrollTo(0, 0));
+        });
+      }
+    });
   </script>
 </body>
 </html>
