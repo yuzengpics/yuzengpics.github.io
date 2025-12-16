@@ -12,11 +12,23 @@
 <style>
 *{ box-sizing:border-box; }
 
+html, body{ height:100%; }
+
 body{
   margin:0;
   font-family: Arial, sans-serif;
   background:#e9edf2;
   color:#111;
+}
+
+/* ✅ Strong scroll lock (prevents Chrome scroll-through) */
+body.lb-open{
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* ===== Navbar ===== */
@@ -157,6 +169,9 @@ main.page{
   /* ✅ Desktop: allow scroll if caption is long */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+
+  /* ✅ prevent scroll chaining */
+  overscroll-behavior: contain;
 }
 .lightbox.open{ display:flex; }
 
@@ -231,13 +246,14 @@ main.page{
   position: fixed;
   top: 18px;
   right: 22px;
-  z-index: 4000;
+  z-index: 5000;
   font-size: 30px;
   line-height: 38px;
   background: rgba(0,0,0,0.55);
   border-color: rgba(255,255,255,0.22);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  pointer-events:auto;
 }
 
 .lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
@@ -306,7 +322,7 @@ main.page{
   /* ✅ When caption sheet opens, lift arrows upward */
   .lightbox.cap-open .lb-prev,
   .lightbox.cap-open .lb-next{
-    top: calc(50% - 90px); /* 想更高：-110px；更低：-70px */
+    top: calc(50% - 90px);
   }
 
   /* close button safe area */
@@ -431,7 +447,7 @@ main.page{
       <img src="photo_x/DSC06050_x.jpg" alt="Climbing2 cover" loading="lazy" decoding="async">
       <p>Wujiang World Cup, 2025</p>
     </div>
-   
+
     <div class="album"
       data-title="Climbing3"
       data-caption="Nanshan, Climbing, 2025."
@@ -439,7 +455,7 @@ main.page{
       <img src="photo_x/DSC04508_x.jpg" alt="Climbing3 cover" loading="lazy" decoding="async">
       <p>Nanshan, Climbing, 2025</p>
     </div>
-    
+
   </div>
 
   <div id="lightbox" class="lightbox" aria-hidden="true">
@@ -488,6 +504,9 @@ main.page{
   let isSwitching = false;
   let unlockTimer = null;
 
+  // ✅ scroll-lock state (fixes Chrome main-page scrolling)
+  let scrollY = 0;
+
   function isMobileNow(){
     return window.matchMedia("(max-width:700px)").matches;
   }
@@ -520,7 +539,7 @@ main.page{
       isSwitching = false;
       setNavDisabled(false);
       unlockTimer = null;
-    }, 500); // 0.5s
+    }, 500);
   }
 
   function unlock(){
@@ -544,6 +563,15 @@ main.page{
 
   function render(){
     if(!images.length) return;
+
+    // ✅ 单张图片：隐藏左右箭头（桌面/手机都生效）
+    if(images.length <= 1){
+      btnPrev.style.display = 'none';
+      btnNext.style.display = 'none';
+    } else {
+      btnPrev.style.display = '';
+      btnNext.style.display = '';
+    }
 
     const src = images[index];
     const counter = `${index + 1}/${images.length}`;
@@ -589,6 +617,8 @@ main.page{
       capBody.scrollTop = 0;
       closeCaptionSheet();
     }
+
+    lb.scrollTop = 0;
   }
 
   function openLightbox(list, t, c){
@@ -599,8 +629,11 @@ main.page{
 
     lb.classList.add('open');
     lb.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
+
+    // ✅ lock page scroll (prevents Chrome “main page moves”)
+    scrollY = window.scrollY || window.pageYOffset || 0;
     document.body.classList.add('lb-open');
+    document.body.style.top = `-${scrollY}px`;
 
     render();
   }
@@ -609,8 +642,12 @@ main.page{
     lb.classList.remove('open');
     lb.classList.remove('cap-open');
     lb.setAttribute('aria-hidden','true');
-    document.body.style.overflow = '';
+
+    // ✅ restore page scroll position
     document.body.classList.remove('lb-open');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollY);
+
     unlock();
   }
 
