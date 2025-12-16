@@ -12,11 +12,23 @@
 <style>
 *{ box-sizing:border-box; }
 
+html, body{ height:100%; }
+
 body{
   margin:0;
   font-family: Arial, sans-serif;
   background:#e9edf2;
   color:#111;
+}
+
+/* ✅ Strong scroll lock (prevents Chrome scroll-through / chaining) */
+body.lb-open{
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* ===== Navbar ===== */
@@ -145,15 +157,17 @@ main.page{
   flex-direction: column;
   z-index: 3000;
 
-  /* ✅ Desktop: allow scroll if caption is long */
+  /* Desktop: allow scroll if caption is long */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+
+  /* ✅ prevent scroll chaining */
+  overscroll-behavior: contain;
 }
 .lightbox.open{ display:flex; }
 
 /* stage (desktop + base) */
 .lightbox .lb-stage{
-  /* ✅ Desktop: don't force full-height; allow page to grow for long caption */
   min-height: auto;
 
   display:flex;
@@ -172,8 +186,6 @@ main.page{
 .lightbox img{
   width: auto;
   max-width: 92vw;
-
-  /* keep image comfortable on desktop; caption can scroll below */
   max-height: 80vh;
 
   border-radius: 12px;
@@ -204,8 +216,6 @@ main.page{
   opacity: 0.95;
   padding: 0 10px 18px;
   white-space: pre-line;
-
-  /* ✅ prevent weird clipping in some browsers */
   word-break: break-word;
 }
 
@@ -228,13 +238,14 @@ main.page{
   position: fixed;
   top: 18px;
   right: 22px;
-  z-index: 4000;
+  z-index: 5000;
   font-size: 30px;
   line-height: 38px;
   background: rgba(0,0,0,0.55);
   border-color: rgba(255,255,255,0.22);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  pointer-events: auto;
 }
 
 .lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
@@ -288,7 +299,7 @@ main.page{
   /* Hide desktop caption on mobile */
   .lightbox .caption{ display:none; }
 
-  /* ✅ Mobile arrows fixed to viewport */
+  /* Mobile arrows fixed to viewport */
   .lb-prev, .lb-next{
     position: fixed;
     top: 50%;
@@ -299,13 +310,13 @@ main.page{
   .lb-prev{ left: 12px; }
   .lb-next{ right: 12px; }
 
-  /* ✅ When caption sheet opens, lift arrows upward */
+  /* When caption sheet opens, lift arrows upward */
   .lightbox.cap-open .lb-prev,
   .lightbox.cap-open .lb-next{
     top: calc(50% - 90px);
   }
 
-  /* ✅ Close button: truly fixed + topmost on mobile (永远可见) */
+  /* Close button safe area (永远可见) */
   .lb-close{
     position: fixed !important;
     top: calc(env(safe-area-inset-top, 0px) + 12px);
@@ -421,7 +432,7 @@ main.page{
 The city is gloomy and unapologetically devoted to its drinking culture.
 I met many people, and along the way, with two truly amazing Chinese friends who made Liverpool feel like home.
 We made it to a million bars, hit my head in the climbing gym with Olivia, fell off the wall, and asked Chengwang to take care of me,
-stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn... 
+stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
       The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
       data-images="photo_x/DSC00741_x.jpg,photo_x/DSC01866_x.jpg,photo_x/DSC00395_x.jpg,photo_x/DSC01801_x.jpg,photo_x/DSC00721_x.jpg,photo_x/DSC00197_x.jpg,photo_x/DSC00605_x.jpg">
       <img src="photo_x/DSC00741_x.jpg" alt="Liverpool cover" loading="lazy" decoding="async">
@@ -435,15 +446,15 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
       <img src="photo_x/IMG_7043.JPEG" alt="Northern Ireland cover" loading="lazy" decoding="async">
       <p>Great adventure with the prince in Northern Ireland</p>
     </div>
-    
+
     <div class="album"
       data-title="Tibet"
       data-caption="Tibet, 2025."
       data-images="photo_x/DSC07427_x.jpg">
       <img src="photo_x/DSC07427_x.jpg" alt="Tibet cover" loading="lazy" decoding="async">
-      <p>Tibet><p>
+      <p>Tibet</p>
     </div>
-  
+
     <div class="album"
       data-title="Days in Bozel"
       data-caption="Days in Bozel."
@@ -451,7 +462,7 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
       <img src="photo_x/DSC07546_x.jpg" alt="Days in Bozel" loading="lazy" decoding="async">
       <p>Days in Bozel</p>
     </div>
-    
+
   </div>
 
   <div id="lightbox" class="lightbox" aria-hidden="true">
@@ -495,6 +506,9 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
 
   let isSwitching = false;
   let unlockTimer = null;
+
+  // ✅ scroll-lock state (fixes Chrome main-page scrolling)
+  let scrollY = 0;
 
   function isMobileNow(){
     return window.matchMedia("(max-width:700px)").matches;
@@ -553,7 +567,7 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
   function render(){
     if(!images.length) return;
 
-    // ✅ 单张图片：隐藏左右箭头（桌面/手机都生效）
+    // ✅ single image: hide arrows (desktop + mobile)
     if(images.length <= 1){
       btnPrev.style.display = 'none';
       btnNext.style.display = 'none';
@@ -614,8 +628,11 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
 
     lb.classList.add('open');
     lb.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
+
+    // ✅ lock page scroll (prevents Chrome “main page moves”)
+    scrollY = window.scrollY || window.pageYOffset || 0;
     document.body.classList.add('lb-open');
+    document.body.style.top = `-${scrollY}px`;
 
     render();
   }
@@ -624,8 +641,12 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
     lb.classList.remove('open');
     lb.classList.remove('cap-open');
     lb.setAttribute('aria-hidden','true');
-    document.body.style.overflow = '';
+
+    // ✅ restore page scroll position
     document.body.classList.remove('lb-open');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollY);
+
     unlock();
   }
 
