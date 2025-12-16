@@ -302,13 +302,16 @@ main.page{
   /* ✅ When caption sheet opens, lift arrows upward */
   .lightbox.cap-open .lb-prev,
   .lightbox.cap-open .lb-next{
-    top: calc(50% - 90px); /* 你想更高：-110px；更低：-70px */
+    top: calc(50% - 90px);
   }
 
-  /* close button safe area */
+  /* ✅ Close button: truly fixed + topmost on mobile (永远可见) */
   .lb-close{
+    position: fixed !important;
     top: calc(env(safe-area-inset-top, 0px) + 12px);
     right: calc(env(safe-area-inset-right, 0px) + 12px);
+    z-index: 5000;
+    pointer-events: auto;
   }
 
   /* Mobile bottom sheet */
@@ -437,18 +440,17 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
       data-title="Tibet"
       data-caption="Tibet, 2025."
       data-images="photo_x/DSC07427_x.jpg">
-      <img src="photo_x/DSC07427_x.jpg" alt="Northern Ireland cover" loading="lazy" decoding="async">
+      <img src="photo_x/DSC07427_x.jpg" alt="Tibet cover" loading="lazy" decoding="async">
       <p>Tibet><p>
     </div>
   
-
-   <div class="album"
+    <div class="album"
       data-title="Days in Bozel"
       data-caption="Days in Bozel."
       data-images="photo_x/DSC07546_x.jpg">
       <img src="photo_x/DSC07546_x.jpg" alt="Days in Bozel" loading="lazy" decoding="async">
       <p>Days in Bozel</p>
-   </div>
+    </div>
     
   </div>
 
@@ -550,6 +552,15 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
 
   function render(){
     if(!images.length) return;
+
+    // ✅ 单张图片：隐藏左右箭头（桌面/手机都生效）
+    if(images.length <= 1){
+      btnPrev.style.display = 'none';
+      btnNext.style.display = 'none';
+    } else {
+      btnPrev.style.display = '';
+      btnNext.style.display = '';
+    }
 
     const src = images[index];
     const counter = `${index + 1}/${images.length}`;
