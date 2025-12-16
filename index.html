@@ -244,52 +244,60 @@
 
     /* ===== Mobile ===== */
     @media (max-width: 820px){
-      .hero{ padding:16px 14px 0; padding-bottom: calc(var(--safe-b) + var(--ui-b) + 120px); }
-      .hero h1{ font-size:24px; }
-      .hero p{ font-size:15px; }
+  .hero{
+    padding:16px 14px 0;
+    padding-bottom: calc(var(--safe-b) + var(--ui-b) + 120px);
+  }
 
-      .cliff-dock{
-        margin-top: 35px;                 /* ✅ 只上移：数值越小越靠上 */
-        grid-template-columns:1fr;
-        row-gap:22px;
-        justify-items:center;             /* ✅ Grid 统一居中（关键） */
-      }
+  .hero h1{ font-size:24px; }
+  .hero p{ font-size:15px; }
 
-      /* ✅ 清除桌面端 left/right 的 start/end 残留（关键） */
-      .marker.left, .marker.right{
-        justify-self:center;
-      }
+  .cliff-dock{
+    margin-top: 35px;
+    grid-template-columns: 1fr;
+    row-gap: 22px;
+    justify-items: center; /* grid 层面居中 */
+  }
 
-      /* ✅ 不变大：不设置固定 width，只限制最大宽度 */
-      .marker{
-        flex-direction:column;
-        align-items:center;
-        text-align:center;
+  /* ✅ 核心：所有分类块统一宽度 */
+  .marker{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
 
-        width:fit-content;                /* ✅ 保持“内容决定宽度” */
-        max-width:min(88vw, 520px);       /* ✅ 超长时才收缩 */
-        gap:6px;
-        background:rgba(0,0,0,0.34);
-      }
+    width: 88vw;           /* ✅ 统一宽度（关键） */
+    max-width: 520px;      /* 桌面尺寸上限 */
+    margin: 0 auto;
 
-      .marker.right{ flex-direction:column; }
+    gap:6px;
+    background:rgba(0,0,0,0.34);
+  }
 
-      /* 手机端显示副标题（你原逻辑），但不撑宽 */
-      .marker .side-text{
-        opacity:1;
-        max-width:100%;
-        overflow:hidden;
-        white-space:nowrap;
-        text-align:center;
-      }
+  /* 清除桌面端残留的左右逻辑 */
+  .marker.left,
+  .marker.right{
+    justify-self:center;
+    flex-direction:column;
+  }
 
-      .scroll-down span{ font-size:15px; }
-      .scroll-down svg{ width:24px; height:24px; }
+  /* ✅ 解释文字：允许换行，完整显示 */
+  .marker .side-text{
+    opacity:1;
+    max-width:100%;
+    white-space: normal;   /* ✅ 允许换行（关键） */
+    overflow: visible;
+    text-align:center;
+  }
 
-      .manifesto{ padding:70px 18px; }
-      .manifesto-inner h2{ font-size:28px; }
-      .manifesto-inner p{ font-size:16px; }
-    }
+  .scroll-down span{ font-size:15px; }
+  .scroll-down svg{ width:24px; height:24px; }
+
+  .manifesto{ padding:70px 18px; }
+  .manifesto-inner h2{ font-size:28px; }
+  .manifesto-inner p{ font-size:16px; }
+}
+
   </style>
 </head>
 
