@@ -1,353 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Shutter – Yu Zeng Photography</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
-
-<style>
-*{ box-sizing:border-box; }
-
-body{
-  margin:0;
-  font-family: Arial, sans-serif;
-  background:#e9edf2;
-  color:#111;
-}
-
-/* ===== Navbar ===== */
-.navbar{
-  position:fixed;
-  top:0; left:0; right:0;
-  height:72px;
-  background:rgba(10,20,35,0.94);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-  z-index:2000;
-}
-
-/* Lightbox opened: disable blur to reduce repaint cost */
-body.lb-open .navbar{
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-
-.nav-inner{
-  max-width:1200px;
-  height:100%;
-  margin:0 auto;
-  padding:0 28px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-
-/* ===== Brand ===== */
-.brand{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  text-decoration:none;
-}
-.brand-logo{ height:48px; width:auto; }
-
-.brand-text{ display:flex; flex-direction:column; line-height:1; }
-.brand-name{
-  font-family:"Montserrat",sans-serif;
-  font-weight:700;
-  font-size:17px;
-  letter-spacing:1.6px;
-  color:#fff;
-}
-.brand-sub{
-  margin-top:4px;
-  font-family:"Playfair Display",serif;
-  font-style:italic;
-  font-size:14px;
-  color:rgba(255,255,255,0.8);
-}
-
-/* ===== Nav links ===== */
-.nav-links{ display:flex; gap:34px; align-items:center; }
-.nav-links a{
-  color:rgba(255,255,255,0.85);
-  text-decoration:none;
-  font-size:16px;
-  padding:6px 0;
-  border-bottom:2px solid transparent;
-  white-space:nowrap;
-}
-.nav-links a:hover{ color:#fff; }
-.nav-links a.active{ color:#fff; border-bottom-color:#fff; }
-
-/* ===== Hero ===== */
-.hero{
-  margin-top:72px;
-  padding:110px 0 80px;
-  text-align:center;
-  color:#fff;
-  background:
-    linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)),
-    url("photo_x/J_x.jpg") center/cover no-repeat;
-}
-.hero h1{ margin:0 0 10px; font-size:56px; }
-.hero p{ margin:0; font-size:18px; opacity:.9; }
-
-/* ===== Page container ===== */
-main.page{
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 28px 20px 80px;
-}
-
-/* ===== Masonry (album covers) ===== */
-.masonry{
-  column-count: 3;
-  column-gap: 16px;
-}
-@media (max-width: 950px){ .masonry{ column-count: 2; } }
-@media (max-width: 650px){ .masonry{ column-count: 1; } }
-
-.album{
-  break-inside: avoid;
-  margin-bottom: 16px;
-  cursor: pointer;
-}
-
-.album img{
-  width: 100%;
-  display:block;
-  border-radius: 12px;
-  box-shadow: 0 10px 22px rgba(0,0,0,0.10);
-  transition: transform .18s ease, box-shadow .18s ease;
-}
-.album:hover img{
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(0,0,0,0.14);
-}
-.album p{
-  margin: 8px 0 0;
-  text-align:center;
-  font-size: 14px;
-  color:#444;
-}
-
-/* ===== Lightbox ===== */
-.lightbox{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.86);
-  display: none;
-  flex-direction: column;
-  z-index: 3000;
-
-  /* desktop: no scroll */
-  overflow: hidden;
-}
-.lightbox.open{ display:flex; }
-
-.lightbox .lb-stage{
-  min-height: 100vh;
-  display:flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.lightbox img{
-  width: auto;
-  max-width: 92vw;
-  max-height: 80vh;
-  border-radius: 12px;
-  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-  display:block;
-  object-fit: contain;
-}
-
-/* Smooth swap */
-#lb-img{
-  opacity: 0;
-  transition: opacity .18s ease;
-  will-change: opacity;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
-.lightbox.open #lb-img{ opacity: 1; }
-
-.lightbox .caption{
-  color: #fff;
-  margin-top: 12px;
-  text-align: center;
-  max-width: 920px;
-  line-height: 1.55;
-  font-size: 15px;
-  opacity: 0.95;
-  padding: 0 10px 10px;
-  white-space: pre-line; /* allow \n to show as new lines */
-}
-
-/* Buttons */
-.lb-close, .lb-prev, .lb-next{
-  position: absolute;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.25);
-  color: #fff;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  font-size: 26px;
-  line-height: 40px;
-  cursor: pointer;
-  user-select: none;
-}
-.lb-close{
-  position: fixed;
-  top: 18px;
-  right: 22px;
-  z-index: 4000;
-  font-size: 30px;
-  line-height: 38px;
-  background: rgba(0,0,0,0.55);
-  border-color: rgba(255,255,255,0.22);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-.lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
-.lb-next{ right: 18px; top: 50%; transform: translateY(-50%); }
-
-.lb-prev[disabled], .lb-next[disabled]{
-  opacity: .45;
-  cursor: not-allowed;
-}
-
-/* ===== Mobile nav behavior + Mobile Lightbox ===== */
-@media (max-width:700px){
-  .navbar{ height:64px; }
-  .nav-inner{ padding:0 18px; }
-  .brand-logo{ height:28px; }
-
-  .nav-links{
-    gap:16px;
-    overflow-x:auto;
-    max-width:70vw;
-    scrollbar-width:none;
-    flex-wrap: nowrap;
-  }
-  .nav-links::-webkit-scrollbar{ display:none; }
-  .nav-links a{ font-size:13px; }
-
-  .hero{ margin-top:64px; padding:90px 0 60px; }
-  .hero h1{ font-size:40px; }
-  .hero p{ font-size:16px; }
-
-  /* ✅ Mobile: allow vertical scroll to read caption */
-  .lightbox{
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y; /* vertical scroll ok; JS intercepts horizontal swipe */
-  }
-
-  .lightbox .lb-stage{
-    min-height: 100dvh;
-    padding-left: 16px;
-    padding-right: 16px;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-    justify-content: center; /* keep image centered at first */
-  }
-
-  .lightbox img{
-    max-height: 78dvh;
-    max-width: 92vw;
-  }
-
-  .lightbox .caption{
-    margin-top: 16px;
-    padding: 16px 10px 24px;
-    text-align: left;
-  }
-
-  .lb-close{
-    top: calc(env(safe-area-inset-top, 0px) + 12px);
-    right: calc(env(safe-area-inset-right, 0px) + 12px);
-  }
-}
-</style>
-</head>
-
-<body>
-<nav class="navbar">
-  <div class="nav-inner">
-    <a class="brand" href="index.html">
-      <img src="photo_x/Logo.png" class="brand-logo" alt="Yu Zeng logo">
-      <div class="brand-text">
-        <span class="brand-name">Yu Zeng</span>
-        <span class="brand-sub">Photography</span>
-      </div>
-    </a>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="memento.html">Memento</a>
-      <a class="active" href="shutter.html">Shutter</a>
-      <a href="sport.html">Sport</a>
-      <a href="contact.html">Contact</a>
-    </div>
-  </div>
-</nav>
-
-<header class="hero">
-  <h1>Shutter</h1>
-  <p>Fragments, no theme, no rules. Just pieces of anything.</p>
-</header>
-
-<main class="page">
-  <div class="masonry">
-
-    <div class="album"
-      data-title="Guinness"
-      data-caption="Sexy drink."
-      data-images="photo_x/DSC00755_x.jpg">
-      <img src="photo_x/DSC00755_x.jpg" alt="Guinness" loading="lazy" decoding="async">
-      <p>Guinness</p>
-    </div>
-
-    <div class="album"
-      data-title="Towel"
-      data-caption="Towel"
-      data-images="photo_x/DSC03136_x.jpg">
-      <img src="photo_x/DSC03136_x.jpg" alt="Towel" loading="lazy" decoding="async">
-      <p>Towel</p>
-    </div>
-
-    <div class="album"
-      data-title="Hedgehog"
-      data-caption="Hedgehog"
-      data-images="photo_x/DSC03868_x.jpg">
-      <img src="photo_x/DSC03868_x.jpg" alt="Hedgehog" loading="lazy" decoding="async">
-      <p>Hedgehog</p>
-    </div>
-
-  </div>
-
-  <div id="lightbox" class="lightbox" aria-hidden="true">
-    <button class="lb-close" aria-label="Close">&times;</button>
-    <button class="lb-prev" aria-label="Previous">&#8249;</button>
-
-    <div class="lb-stage">
-      <img id="lb-img" src="" alt="" decoding="async" draggable="false">
-      <div class="caption" id="lb-caption"></div>
-    </div>
-
-    <button class="lb-next" aria-label="Next">&#8250;</button>
-  </div>
-</main>
-
 <script>
   const lb = document.getElementById('lightbox');
   const lbImg = document.getElementById('lb-img');
@@ -386,6 +36,15 @@ main.page{
     btnNext.disabled = disabled;
   }
 
+  // ✅ show/hide arrows depending on count
+  function updateArrows(){
+    const multi = images.length > 1;
+    btnPrev.style.display = multi ? "" : "none";
+    btnNext.style.display = multi ? "" : "none";
+    btnPrev.disabled = !multi;
+    btnNext.disabled = !multi;
+  }
+
   function lockIfMobile(){
     if(!isMobileNow()) return;
 
@@ -411,6 +70,8 @@ main.page{
 
   function render(){
     if(!images.length) return;
+
+    updateArrows();
 
     const src = images[index];
     const counter = `${index + 1}/${images.length}`;
@@ -445,7 +106,6 @@ main.page{
       ? `${title} — ${counter}${caption ? " · " + caption : ""}`
       : counter;
 
-    // keep close reachable (mobile scroll)
     lb.scrollTop = 0;
   }
 
@@ -486,7 +146,6 @@ main.page{
     render();
   }
 
-  // Bind albums (click anywhere on card)
   document.querySelectorAll('.album').forEach(card => {
     card.addEventListener('click', () => {
       const list = (card.dataset.images || '')
@@ -503,12 +162,10 @@ main.page{
   btnPrev.addEventListener('click', prev);
   btnNext.addEventListener('click', next);
 
-  // Click outside stage to close
   lb.addEventListener('click', (e) => {
     if(e.target === lb) closeLightbox();
   });
 
-  // Keyboard navigation
   window.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
     if(e.key === 'Escape') closeLightbox();
@@ -516,19 +173,16 @@ main.page{
     if(e.key === 'ArrowRight') next();
   });
 
-  /* =========================
-     Swipe support (mobile)
-     ========================= */
+  /* Swipe support (mobile) */
   let startX = 0, startY = 0;
   let tracking = false;
-  let lockedDirection = null; // "x" | "y" | null
+  let lockedDirection = null;
   const SWIPE_MIN = 45;
   const LOCK_THRESHOLD = 10;
 
   function onTouchStart(e){
     if(!lb.classList.contains('open')) return;
     if(!e.touches || e.touches.length !== 1) return;
-
     const t = e.touches[0];
     startX = t.clientX;
     startY = t.clientY;
@@ -564,6 +218,7 @@ main.page{
 
     if(!lb.classList.contains('open')) return;
     if(lockedDirection !== "x") return;
+    if(images.length <= 1) return;
 
     const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
     if(!t) return;
@@ -582,7 +237,6 @@ main.page{
   lb.addEventListener('touchmove', onTouchMove, { passive: false });
   lb.addEventListener('touchend', onTouchEnd, { passive: true });
 
-  // Optional: double-tap image to close
   let lastTap = 0;
   lbImg.addEventListener('touchend', () => {
     if(!lb.classList.contains('open')) return;
@@ -591,6 +245,3 @@ main.page{
     lastTap = now;
   }, { passive: true });
 </script>
-
-</body>
-</html>
