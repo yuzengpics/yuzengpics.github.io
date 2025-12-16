@@ -29,6 +29,8 @@ body{
   -webkit-backdrop-filter:blur(8px);
   z-index:2000;
 }
+
+/* Lightbox opened: disable blur to reduce repaint cost */
 body.lb-open .navbar{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
@@ -51,7 +53,8 @@ body.lb-open .navbar{
   gap:14px;
   text-decoration:none;
 }
-.brand-logo{ height:48px; }
+.brand-logo{ height:48px; width:auto; }
+
 .brand-text{ display:flex; flex-direction:column; line-height:1; }
 .brand-name{
   font-family:"Montserrat",sans-serif;
@@ -68,19 +71,18 @@ body.lb-open .navbar{
   color:rgba(255,255,255,0.8);
 }
 
-/* ===== Nav ===== */
-.nav-links{ display:flex; gap:34px; }
+/* ===== Nav links ===== */
+.nav-links{ display:flex; gap:34px; align-items:center; }
 .nav-links a{
   color:rgba(255,255,255,0.85);
   text-decoration:none;
   font-size:16px;
   padding:6px 0;
   border-bottom:2px solid transparent;
+  white-space:nowrap;
 }
-.nav-links a.active{
-  color:#fff;
-  border-bottom-color:#fff;
-}
+.nav-links a:hover{ color:#fff; }
+.nav-links a.active{ color:#fff; border-bottom-color:#fff; }
 
 /* ===== Hero ===== */
 .hero{
@@ -92,112 +94,181 @@ body.lb-open .navbar{
     linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)),
     url("photo_x/E_x.jpg") center/cover no-repeat;
 }
-.hero h1{ font-size:56px; margin:0 0 10px; }
+.hero h1{ margin:0 0 10px; font-size:56px; }
 .hero p{ margin:0; font-size:18px; opacity:.9; }
 
-/* ===== Page ===== */
+/* ===== Page container ===== */
 main.page{
-  max-width:1100px;
-  margin:0 auto;
-  padding:28px 20px 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
 }
 
-/* ===== Masonry ===== */
-.masonry{ column-count:3; column-gap:16px; }
-@media (max-width:950px){ .masonry{ column-count:2; } }
-@media (max-width:650px){ .masonry{ column-count:1; } }
+/* ===== Masonry (album covers) ===== */
+.masonry{
+  column-count: 3;
+  column-gap: 16px;
+}
+@media (max-width: 950px){ .masonry{ column-count: 2; } }
+@media (max-width: 650px){ .masonry{ column-count: 1; } }
 
 .album{
-  break-inside:avoid;
-  margin-bottom:16px;
-  cursor:pointer;
-}
-.album img{
-  width:100%;
-  border-radius:12px;
-  box-shadow:0 10px 22px rgba(0,0,0,.1);
-}
-.album p{
-  margin:8px 0 0;
-  text-align:center;
-  font-size:14px;
+  break-inside: avoid;
+  margin-bottom: 16px;
+  cursor: pointer;
 }
 
-/* ===== Lightbox ===== */
+.album img{
+  width: 100%;
+  display:block;
+  border-radius: 12px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.album:hover img{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.14);
+}
+.album p{
+  margin: 8px 0 0;
+  text-align:center;
+  font-size: 14px;
+  color:#444;
+}
+
+/* ===== Lightbox (carousel) ===== */
 .lightbox{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.86);
-  display:none;
-  flex-direction:column;
-  z-index:3000;
-  padding:20px;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  touch-action:pan-y;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.86);
+  display: none;
+  flex-direction: column;
+  z-index: 3000;
+
+  /* allow vertical scroll for long captions */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  /* allow vertical pan; we'll intercept horizontal swipe in JS */
+  touch-action: pan-y;
 }
 .lightbox.open{ display:flex; }
 
-.lb-stage{
-  min-height:calc(100vh - 40px);
+/* stage: reserve safe area + space for close btn */
+.lightbox .lb-stage{
+  /* use dvh on mobile Safari to avoid 100vh bugs */
+  min-height: 100dvh;
   display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  padding-top:16px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding-left: 16px;
+  padding-right: 16px;
+
+  /* top padding ensures image never sits under the close button */
+  padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
 }
 
+/* Image sizing: contain fully, no extra margin-top */
 .lightbox img{
-  max-width:92vw;
-  max-height:calc(100vh - 160px);
-  border-radius:12px;
-  margin-top:56px;
-  box-shadow:0 18px 40px rgba(0,0,0,.35);
+  width: auto;
+  max-width: 92vw;
+
+  /* key fix: dvh + enough room for caption + controls */
+  max-height: calc(100dvh - 210px);
+
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+  display:block;
+  object-fit: contain;
 }
 
+/* Smooth swap */
 #lb-img{
-  opacity:0;
-  transition:opacity .18s ease;
+  opacity: 0;
+  transition: opacity .18s ease;
+  will-change: opacity;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
-.lightbox.open #lb-img{ opacity:1; }
+.lightbox.open #lb-img{ opacity: 1; }
 
-.caption{
-  color:#fff;
-  margin-top:12px;
-  text-align:center;
-  max-width:920px;
-  line-height:1.55;
-  font-size:15px;
-  padding:0 10px 10px;
+.lightbox .caption{
+  color: #fff;
+  margin-top: 12px;
+  text-align: center;
+  max-width: 920px;
+  line-height: 1.55;
+  font-size: 15px;
+  opacity: 0.95;
+  padding: 0 10px 10px;
 }
 
-/* ===== Buttons ===== */
-.lb-close,.lb-prev,.lb-next{
-  position:absolute;
-  width:44px;
-  height:44px;
-  border-radius:999px;
-  background:rgba(255,255,255,.12);
-  border:1px solid rgba(255,255,255,.25);
-  color:#fff;
-  font-size:26px;
-  line-height:40px;
+/* Lightbox buttons */
+.lb-close, .lb-prev, .lb-next{
+  position: absolute;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  font-size: 26px;
+  line-height: 40px;
+  cursor: pointer;
+  user-select: none;
 }
+
+/* Close button always reachable (fixed) */
 .lb-close{
-  position:fixed;
-  top:env(safe-area-inset-top,18px);
-  right:env(safe-area-inset-right,22px);
-  z-index:4000;
-  background:rgba(0,0,0,.55);
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
+  z-index: 4000;
+  font-size: 30px;
+  line-height: 38px;
+  background: rgba(0,0,0,0.55);
+  border-color: rgba(255,255,255,0.22);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
-.lb-prev{ left:18px; top:50%; transform:translateY(-50%); }
-.lb-next{ right:18px; top:50%; transform:translateY(-50%); }
 
-/* ===== Mobile ===== */
+/* prev/next */
+.lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
+.lb-next{ right: 18px; top: 50%; transform: translateY(-50%); }
+
+.lb-prev[disabled], .lb-next[disabled]{
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+/* ===== Mobile nav behavior ===== */
 @media (max-width:700px){
   .navbar{ height:64px; }
+  .nav-inner{ padding:0 18px; }
+  .brand-logo{ height:28px; }
+
+  .nav-links{
+    gap:16px;
+    overflow-x:auto;
+    max-width:70vw;
+    scrollbar-width:none;
+    flex-wrap: nowrap;
+  }
+  .nav-links::-webkit-scrollbar{ display:none; }
+  .nav-links a{ font-size:13px; }
+
   .hero{ margin-top:64px; padding:90px 0 60px; }
   .hero h1{ font-size:40px; }
+  .hero p{ font-size:16px; }
+
+  /* a bit more room for caption on small screens */
+  .lightbox img{
+    max-height: calc(100dvh - 230px);
+  }
 }
 </style>
 </head>
@@ -207,12 +278,13 @@ main.page{
 <nav class="navbar">
   <div class="nav-inner">
     <a class="brand" href="index.html">
-      <img src="photo_x/Logo.png" class="brand-logo">
+      <img src="photo_x/Logo.png" alt="Yu Zeng logo" class="brand-logo">
       <div class="brand-text">
         <span class="brand-name">Yu Zeng</span>
         <span class="brand-sub">Photography</span>
       </div>
     </a>
+
     <div class="nav-links">
       <a href="index.html">Home</a>
       <a class="active" href="memento.html">Memento</a>
@@ -233,94 +305,263 @@ main.page{
 
     <div class="album"
       data-title="Liverpool"
-      data-caption="Liverpool is a place full of memories..."
-      data-images="photo_x/DSC00741_x.jpg,photo_x/DSC01866_x.jpg,photo_x/DSC00395_x.jpg">
-      <img src="photo_x/DSC00741_x.jpg" loading="lazy">
+      data-caption='Liverpool is a place full of memories.
+The city is gloomy and unapologetically devoted to its drinking culture.
+The cover photo captures a walk with my “bro” Xin on a rare day of beautiful weather, quite strange for this city.
+During that time, I met many people, and along the way, with two truly amazing Chinese friends who made Liverpool feel like home.
+We made it to lots of bars, hit my head in the climbing gym with Olivia, fell off the wall, and asked Chengwang to take care of me,
+stayed at Finn&apos;s place watching dramas.'
+      data-images="photo_x/DSC00741_x.jpg,photo_x/DSC01866_x.jpg,photo_x/DSC00395_x.jpg,photo_x/DSC01801_x.jpg,photo_x/DSC00721_x.jpg,photo_x/DSC00197_x.jpg,photo_x/DSC00605_x.jpg">
+      <img src="photo_x/DSC00741_x.jpg" alt="Liverpool cover" loading="lazy" decoding="async">
       <p>Liverpool</p>
+    </div>
+
+    <div class="album"
+      data-title="Northern Ireland adventure."
+      data-caption="A conference for me is boring (sometimes)."
+      data-images="photo_x/IMG_7043.JPEG">
+      <img src="photo_x/IMG_7043.JPEG" alt="Northern Ireland cover" loading="lazy" decoding="async">
+      <p>Northern Ireland adventure.</p>
     </div>
 
   </div>
 
-  <div id="lightbox" class="lightbox">
-    <button class="lb-close">&times;</button>
-    <button class="lb-prev">&#8249;</button>
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button class="lb-close" aria-label="Close">&times;</button>
+    <button class="lb-prev" aria-label="Previous">&#8249;</button>
 
     <div class="lb-stage">
-      <img id="lb-img">
+      <img id="lb-img" src="" alt="" decoding="async" draggable="false">
       <div class="caption" id="lb-caption"></div>
     </div>
 
-    <button class="lb-next">&#8250;</button>
+    <button class="lb-next" aria-label="Next">&#8250;</button>
   </div>
 </main>
 
 <script>
-const lb = document.getElementById('lightbox');
-const lbImg = document.getElementById('lb-img');
-const lbCaption = document.getElementById('lb-caption');
-const btnPrev = document.querySelector('.lb-prev');
-const btnNext = document.querySelector('.lb-next');
-const btnClose = document.querySelector('.lb-close');
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbCaption = document.getElementById('lb-caption');
+  const btnClose = document.querySelector('.lb-close');
+  const btnPrev = document.querySelector('.lb-prev');
+  const btnNext = document.querySelector('.lb-next');
 
-const isMobile = window.matchMedia("(max-width:700px)").matches;
+  let images = [];
+  let index = 0;
+  let title = '';
+  let caption = '';
 
-let images=[], index=0, title='', caption='', isSwitching=false;
+  // Prevent mobile spam-click lockups (your “lock”)
+  let isSwitching = false;
 
-function preload(src){
-  if(!src) return;
-  const i=new Image(); i.decoding="async"; i.src=src;
-}
-
-function render(){
-  const src=images[index];
-  lbImg.style.opacity=0;
-
-  preload(images[index+1]);
-  preload(images[index-1]);
-
-  if(isMobile){
-    isSwitching=true;
-    btnPrev.disabled=btnNext.disabled=true;
+  function preload(src){
+    if(!src) return;
+    const im = new Image();
+    im.decoding = "async";
+    im.src = src;
   }
 
-  const unlock=()=> {
-    isSwitching=false;
-    btnPrev.disabled=btnNext.disabled=false;
-  };
-  setTimeout(unlock,500);
+  function safeIndex(i){
+    if(!images.length) return 0;
+    return (i + images.length) % images.length;
+  }
 
-  const tmp=new Image();
-  tmp.onload=()=>{
-    lbImg.src=src;
-    requestAnimationFrame(()=>lbImg.style.opacity=1);
-    unlock();
-  };
-  tmp.src=src;
+  function setNavDisabled(disabled){
+    btnPrev.disabled = disabled;
+    btnNext.disabled = disabled;
+  }
 
-  lbCaption.textContent=`${title} — ${index+1}/${images.length} · ${caption}`;
-  lb.scrollTop=0;
-}
+  function render(){
+    if(!images.length) return;
 
-function openLB(list,t,c){
-  images=list; index=0; title=t; caption=c;
-  lb.classList.add('open');
-  document.body.classList.add('lb-open');
-  render();
-}
+    const src = images[index];
+    const counter = `${index + 1}/${images.length}`;
+    lbImg.alt = title ? `${title} (${counter})` : `Photo ${counter}`;
 
-document.querySelectorAll('.album').forEach(a=>{
-  a.onclick=()=>{
-    openLB(
-      a.dataset.images.split(','),
-      a.dataset.title,
-      a.dataset.caption
-    );
-  };
-});
+    // Fade out immediately
+    lbImg.style.opacity = 0;
 
-btnClose.onclick=()=>{ lb.classList.remove('open'); document.body.classList.remove('lb-open'); };
-btnPrev.onclick=()=>{ if(isMobile && isSwitching) return; index=(index-1+images.length)%images.length; render(); };
-btnNext.onclick=()=>{ if(isMobile && isSwitching) return; index=(index+1)%images.length; render(); };
+    // Preload current + neighbors
+    preload(images[safeIndex(index)]);
+    preload(images[safeIndex(index + 1)]);
+    preload(images[safeIndex(index - 1)]);
+
+    isSwitching = true;
+    setNavDisabled(true);
+
+    const tmp = new Image();
+    tmp.decoding = "async";
+
+    tmp.onload = () => {
+      lbImg.src = src;
+      requestAnimationFrame(() => { lbImg.style.opacity = 1; });
+      isSwitching = false;
+      setNavDisabled(false);
+    };
+
+    tmp.onerror = () => {
+      // even if error, don't “freeze”
+      lbImg.src = src;
+      requestAnimationFrame(() => { lbImg.style.opacity = 1; });
+      isSwitching = false;
+      setNavDisabled(false);
+    };
+
+    tmp.src = src;
+
+    lbCaption.textContent = title
+      ? `${title} — ${counter}${caption ? " · " + caption : ""}`
+      : counter;
+
+    // Keep close button reachable
+    lb.scrollTop = 0;
+  }
+
+  function openLightbox(list, t, c){
+    images = list;
+    index = 0;
+    title = t || '';
+    caption = c || '';
+
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('lb-open');
+
+    lb.scrollTop = 0;
+    render();
+  }
+
+  function closeLightbox(){
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    document.body.classList.remove('lb-open');
+    isSwitching = false;
+    setNavDisabled(false);
+  }
+
+  function prev(){
+    if(images.length <= 1) return;
+    if(isSwitching) return;
+    index = safeIndex(index - 1);
+    render();
+  }
+
+  function next(){
+    if(images.length <= 1) return;
+    if(isSwitching) return;
+    index = safeIndex(index + 1);
+    render();
+  }
+
+  // Bind albums
+  document.querySelectorAll('.album').forEach(card => {
+    card.addEventListener('click', () => {
+      const list = (card.dataset.images || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if(!list.length) return;
+      openLightbox(list, card.dataset.title, card.dataset.caption);
+    });
+  });
+
+  btnClose.addEventListener('click', closeLightbox);
+  btnPrev.addEventListener('click', prev);
+  btnNext.addEventListener('click', next);
+
+  // Click outside stage to close (don’t close when tapping on content)
+  lb.addEventListener('click', (e) => {
+    const stage = lb.querySelector('.lb-stage');
+    if(e.target === lb) closeLightbox();
+    if(stage && e.target === stage) closeLightbox();
+  });
+
+  // Keyboard navigation
+  window.addEventListener('keydown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if(e.key === 'Escape') closeLightbox();
+    if(e.key === 'ArrowLeft') prev();
+    if(e.key === 'ArrowRight') next();
+  });
+
+  /* =========================
+     Swipe support (mobile)
+     ========================= */
+  let startX = 0, startY = 0;
+  let tracking = false;
+  let lockedDirection = null; // "x" | "y" | null
+  const SWIPE_MIN = 45;       // px
+  const LOCK_THRESHOLD = 10;  // px
+
+  function onTouchStart(e){
+    if(!lb.classList.contains('open')) return;
+    if(!e.touches || e.touches.length !== 1) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    tracking = true;
+    lockedDirection = null;
+  }
+
+  function onTouchMove(e){
+    if(!tracking) return;
+    if(!lb.classList.contains('open')) return;
+    if(!e.touches || e.touches.length !== 1) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+
+    if(!lockedDirection){
+      if(Math.abs(dx) > LOCK_THRESHOLD || Math.abs(dy) > LOCK_THRESHOLD){
+        lockedDirection = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      } else {
+        return;
+      }
+    }
+
+    if(lockedDirection === "x"){
+      e.preventDefault(); // intercept horizontal swipe
+    }
+  }
+
+  function onTouchEnd(e){
+    if(!tracking) return;
+    tracking = false;
+
+    if(!lb.classList.contains('open')) return;
+    if(lockedDirection !== "x") return;
+
+    const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+    if(!t) return;
+
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+
+    if(Math.abs(dx) < SWIPE_MIN) return;
+    if(Math.abs(dx) < Math.abs(dy)) return;
+
+    if(dx < 0) next();
+    else prev();
+  }
+
+  lb.addEventListener('touchstart', onTouchStart, { passive: true });
+  lb.addEventListener('touchmove', onTouchMove, { passive: false });
+  lb.addEventListener('touchend', onTouchEnd, { passive: true });
+
+  /* Optional: double-tap image to close (extra safety) */
+  let lastTap = 0;
+  lbImg.addEventListener('touchend', () => {
+    if(!lb.classList.contains('open')) return;
+    const now = Date.now();
+    if(now - lastTap < 300) closeLightbox();
+    lastTap = now;
+  }, { passive: true });
 </script>
 
 </body>
