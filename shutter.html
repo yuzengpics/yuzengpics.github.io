@@ -30,6 +30,12 @@ body{
   z-index:2000;
 }
 
+/* Lightbox opened: disable blur to reduce repaint cost */
+body.lb-open .navbar{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
 .nav-inner{
   max-width:1200px;
   height:100%;
@@ -130,26 +136,49 @@ main.page{
   color:#444;
 }
 
-/* ===== Lightbox (carousel) ===== */
+/* ===== Lightbox ===== */
 .lightbox{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.86);
   display: none;
-  align-items: center;
-  justify-content: center;
   flex-direction: column;
   z-index: 3000;
-  padding: 20px;
+
+  /* desktop: no scroll */
+  overflow: hidden;
 }
 .lightbox.open{ display:flex; }
 
+.lightbox .lb-stage{
+  min-height: 100vh;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
 .lightbox img{
+  width: auto;
   max-width: 92vw;
   max-height: 80vh;
   border-radius: 12px;
   box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+  display:block;
+  object-fit: contain;
 }
+
+/* Smooth swap */
+#lb-img{
+  opacity: 0;
+  transition: opacity .18s ease;
+  will-change: opacity;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.lightbox.open #lb-img{ opacity: 1; }
 
 .lightbox .caption{
   color: #fff;
@@ -159,9 +188,11 @@ main.page{
   line-height: 1.55;
   font-size: 15px;
   opacity: 0.95;
+  padding: 0 10px 10px;
+  white-space: pre-line; /* allow \n to show as new lines */
 }
 
-/* Lightbox buttons */
+/* Buttons */
 .lb-close, .lb-prev, .lb-next{
   position: absolute;
   background: rgba(255,255,255,0.12);
@@ -175,11 +206,27 @@ main.page{
   cursor: pointer;
   user-select: none;
 }
-.lb-close{ top: 18px; right: 22px; font-size: 30px; line-height: 38px; }
+.lb-close{
+  position: fixed;
+  top: 18px;
+  right: 22px;
+  z-index: 4000;
+  font-size: 30px;
+  line-height: 38px;
+  background: rgba(0,0,0,0.55);
+  border-color: rgba(255,255,255,0.22);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
 .lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
 .lb-next{ right: 18px; top: 50%; transform: translateY(-50%); }
 
-/* ===== Mobile nav behavior ===== */
+.lb-prev[disabled], .lb-next[disabled]{
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+/* ===== Mobile nav behavior + Mobile Lightbox ===== */
 @media (max-width:700px){
   .navbar{ height:64px; }
   .nav-inner{ padding:0 18px; }
@@ -193,12 +240,43 @@ main.page{
     flex-wrap: nowrap;
   }
   .nav-links::-webkit-scrollbar{ display:none; }
-
   .nav-links a{ font-size:13px; }
 
   .hero{ margin-top:64px; padding:90px 0 60px; }
   .hero h1{ font-size:40px; }
   .hero p{ font-size:16px; }
+
+  /* ✅ Mobile: allow vertical scroll to read caption */
+  .lightbox{
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y; /* vertical scroll ok; JS intercepts horizontal swipe */
+  }
+
+  .lightbox .lb-stage{
+    min-height: 100dvh;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+    justify-content: center; /* keep image centered at first */
+  }
+
+  .lightbox img{
+    max-height: 78dvh;
+    max-width: 92vw;
+  }
+
+  .lightbox .caption{
+    margin-top: 16px;
+    padding: 16px 10px 24px;
+    text-align: left;
+  }
+
+  .lb-close{
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    right: calc(env(safe-area-inset-right, 0px) + 12px);
+  }
 }
 </style>
 </head>
@@ -207,7 +285,7 @@ main.page{
 <nav class="navbar">
   <div class="nav-inner">
     <a class="brand" href="index.html">
-      <img src="photo_x/Logo.png" class="brand-logo">
+      <img src="photo_x/Logo.png" class="brand-logo" alt="Yu Zeng logo">
       <div class="brand-text">
         <span class="brand-name">Yu Zeng</span>
         <span class="brand-sub">Photography</span>
@@ -235,36 +313,284 @@ main.page{
       data-title="Guinness"
       data-caption="Sexy drink."
       data-images="photo_x/DSC00755_x.jpg">
-      <img src="photo_x/DSC00755_x.jpg">
+      <img src="photo_x/DSC00755_x.jpg" alt="Guinness" loading="lazy" decoding="async">
       <p>Guinness</p>
     </div>
-   
+
     <div class="album"
       data-title="Towel"
       data-caption="Towel"
       data-images="photo_x/DSC03136_x.jpg">
-      <img src="photo_x/DSC03136_x.jpg">
+      <img src="photo_x/DSC03136_x.jpg" alt="Towel" loading="lazy" decoding="async">
       <p>Towel</p>
     </div>
 
-      <div class="album"
+    <div class="album"
       data-title="Hedgehog"
       data-caption="Hedgehog"
       data-images="photo_x/DSC03868_x.jpg">
-      <img src="photo_x/DSC03868_x.jpg">
+      <img src="photo_x/DSC03868_x.jpg" alt="Hedgehog" loading="lazy" decoding="async">
       <p>Hedgehog</p>
     </div>
+
   </div>
 
-  <div id="lightbox" class="lightbox">
-    <button class="lb-close">&times;</button>
-    <button class="lb-prev">&#8249;</button>
-    <img id="lb-img">
-    <button class="lb-next">&#8250;</button>
-    <div class="caption" id="lb-caption"></div>
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button class="lb-close" aria-label="Close">&times;</button>
+    <button class="lb-prev" aria-label="Previous">&#8249;</button>
+
+    <div class="lb-stage">
+      <img id="lb-img" src="" alt="" decoding="async" draggable="false">
+      <div class="caption" id="lb-caption"></div>
+    </div>
+
+    <button class="lb-next" aria-label="Next">&#8250;</button>
   </div>
 </main>
 
-<script src="lightbox.js"></script>
+<script>
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbCaption = document.getElementById('lb-caption');
+  const btnClose = document.querySelector('.lb-close');
+  const btnPrev = document.querySelector('.lb-prev');
+  const btnNext = document.querySelector('.lb-next');
+
+  let images = [];
+  let index = 0;
+  let title = '';
+  let caption = '';
+
+  // mobile-only lock
+  let isSwitching = false;
+  let unlockTimer = null;
+
+  function isMobileNow(){
+    return window.matchMedia("(max-width:700px)").matches;
+  }
+
+  function preload(src){
+    if(!src) return;
+    const im = new Image();
+    im.decoding = "async";
+    im.src = src;
+  }
+
+  function safeIndex(i){
+    if(!images.length) return 0;
+    return (i + images.length) % images.length;
+  }
+
+  function setNavDisabled(disabled){
+    btnPrev.disabled = disabled;
+    btnNext.disabled = disabled;
+  }
+
+  function lockIfMobile(){
+    if(!isMobileNow()) return;
+
+    isSwitching = true;
+    setNavDisabled(true);
+
+    if(unlockTimer) clearTimeout(unlockTimer);
+    unlockTimer = setTimeout(() => {
+      isSwitching = false;
+      setNavDisabled(false);
+      unlockTimer = null;
+    }, 500);
+  }
+
+  function unlock(){
+    if(unlockTimer){
+      clearTimeout(unlockTimer);
+      unlockTimer = null;
+    }
+    isSwitching = false;
+    setNavDisabled(false);
+  }
+
+  function render(){
+    if(!images.length) return;
+
+    const src = images[index];
+    const counter = `${index + 1}/${images.length}`;
+    lbImg.alt = title ? `${title} (${counter})` : `Photo ${counter}`;
+
+    lbImg.style.opacity = 0;
+
+    preload(images[safeIndex(index)]);
+    preload(images[safeIndex(index + 1)]);
+    preload(images[safeIndex(index - 1)]);
+
+    lockIfMobile();
+
+    const tmp = new Image();
+    tmp.decoding = "async";
+
+    tmp.onload = () => {
+      lbImg.src = src;
+      requestAnimationFrame(() => { lbImg.style.opacity = 1; });
+      unlock();
+    };
+
+    tmp.onerror = () => {
+      lbImg.src = src;
+      requestAnimationFrame(() => { lbImg.style.opacity = 1; });
+      unlock();
+    };
+
+    tmp.src = src;
+
+    lbCaption.textContent = title
+      ? `${title} — ${counter}${caption ? " · " + caption : ""}`
+      : counter;
+
+    // keep close reachable (mobile scroll)
+    lb.scrollTop = 0;
+  }
+
+  function openLightbox(list, t, c){
+    images = list;
+    index = 0;
+    title = t || '';
+    caption = c || '';
+
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('lb-open');
+
+    lb.scrollTop = 0;
+    render();
+  }
+
+  function closeLightbox(){
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    document.body.classList.remove('lb-open');
+    unlock();
+  }
+
+  function prev(){
+    if(images.length <= 1) return;
+    if(isMobileNow() && isSwitching) return;
+    index = safeIndex(index - 1);
+    render();
+  }
+
+  function next(){
+    if(images.length <= 1) return;
+    if(isMobileNow() && isSwitching) return;
+    index = safeIndex(index + 1);
+    render();
+  }
+
+  // Bind albums (click anywhere on card)
+  document.querySelectorAll('.album').forEach(card => {
+    card.addEventListener('click', () => {
+      const list = (card.dataset.images || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if(!list.length) return;
+      openLightbox(list, card.dataset.title, card.dataset.caption);
+    });
+  });
+
+  btnClose.addEventListener('click', closeLightbox);
+  btnPrev.addEventListener('click', prev);
+  btnNext.addEventListener('click', next);
+
+  // Click outside stage to close
+  lb.addEventListener('click', (e) => {
+    if(e.target === lb) closeLightbox();
+  });
+
+  // Keyboard navigation
+  window.addEventListener('keydown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if(e.key === 'Escape') closeLightbox();
+    if(e.key === 'ArrowLeft') prev();
+    if(e.key === 'ArrowRight') next();
+  });
+
+  /* =========================
+     Swipe support (mobile)
+     ========================= */
+  let startX = 0, startY = 0;
+  let tracking = false;
+  let lockedDirection = null; // "x" | "y" | null
+  const SWIPE_MIN = 45;
+  const LOCK_THRESHOLD = 10;
+
+  function onTouchStart(e){
+    if(!lb.classList.contains('open')) return;
+    if(!e.touches || e.touches.length !== 1) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    tracking = true;
+    lockedDirection = null;
+  }
+
+  function onTouchMove(e){
+    if(!tracking) return;
+    if(!lb.classList.contains('open')) return;
+    if(!e.touches || e.touches.length !== 1) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+
+    if(!lockedDirection){
+      if(Math.abs(dx) > LOCK_THRESHOLD || Math.abs(dy) > LOCK_THRESHOLD){
+        lockedDirection = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      } else {
+        return;
+      }
+    }
+
+    if(lockedDirection === "x"){
+      e.preventDefault();
+    }
+  }
+
+  function onTouchEnd(e){
+    if(!tracking) return;
+    tracking = false;
+
+    if(!lb.classList.contains('open')) return;
+    if(lockedDirection !== "x") return;
+
+    const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+    if(!t) return;
+
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+
+    if(Math.abs(dx) < SWIPE_MIN) return;
+    if(Math.abs(dx) < Math.abs(dy)) return;
+
+    if(dx < 0) next();
+    else prev();
+  }
+
+  lb.addEventListener('touchstart', onTouchStart, { passive: true });
+  lb.addEventListener('touchmove', onTouchMove, { passive: false });
+  lb.addEventListener('touchend', onTouchEnd, { passive: true });
+
+  // Optional: double-tap image to close
+  let lastTap = 0;
+  lbImg.addEventListener('touchend', () => {
+    if(!lb.classList.contains('open')) return;
+    const now = Date.now();
+    if(now - lastTap < 300) closeLightbox();
+    lastTap = now;
+  }, { passive: true });
+</script>
+
 </body>
 </html>
