@@ -7,18 +7,21 @@
   <title>Yu Zeng Photography</title>
 
   <style>
-    *{ box-sizing:border-box; } /* google chrome 手机端依然不显示 scroll */
+    *{ box-sizing:border-box; }
     html,body{ height:100%; scroll-behavior:smooth; }
 
+    /* 用伪元素做“真正的背景”，移动端不会出现固定/断层问题 */
     body{
       margin:0;
       font-family:'Poppins', Arial, sans-serif;
       min-height:100vh;
-      background:#000;
+
+      background: #000; /* 兜底色 */
       scroll-snap-type:y mandatory;
       overflow-y:scroll;
     }
 
+    /* 背景图层：跟着滚动（position: fixed 但覆盖整个页面，不会“只显示第一屏”） */
     body::after{
       content:"";
       position:fixed;
@@ -28,6 +31,7 @@
       transform: translateZ(0);
     }
 
+    /* 变暗层：默认不暗，第二屏渐变变暗 */
     body::before{
       content:"";
       position:fixed;
@@ -42,6 +46,7 @@
 
     .screen{ position:relative; z-index:1; }
 
+    /* ===== 第一屏 ===== */
     .hero{
       min-height:100vh;
       scroll-snap-align:start;
@@ -54,9 +59,6 @@
       padding: 36px 20px 0;
       text-align:center;
       position:relative;
-
-      /* ✅ 给底部留空间，避免 fixed 提示挡住内容 */
-      padding-bottom: 140px;
     }
 
     .hero-top{
@@ -97,6 +99,7 @@
       transform:translateY(2px);
     }
 
+    /* 分类按钮：往下推一点 */
     .cliff-dock{
       width:100%;
       max-width:1100px;
@@ -160,16 +163,16 @@
     .marker.right{ flex-direction:row-reverse; }
     .marker.right .side-text{ text-align:right; }
 
-    /* ✅ Scroll 提示：改成 fixed，避免被 Chrome 底栏盖住 */
+    /* Scroll 提示：更靠底 + 箭头动 */
     .scroll-down{
-      position:fixed;
+      position:absolute;
       left:0; right:0;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); /* ✅ safe-area */
       text-align:center;
       color:#fff;
       cursor:pointer;
       user-select:none;
-      z-index: 9999;
+      z-index: 10; /* ✅ 确保在最上层 */
     }
 
     .scroll-down span{
@@ -196,6 +199,7 @@
       filter:drop-shadow(0 2px 10px rgba(0,0,0,0.45));
     }
 
+    /* ===== 第二屏 ===== */
     .manifesto{
       min-height:100vh;
       scroll-snap-align:start;
@@ -228,8 +232,10 @@
       max-width:78ch;
     }
 
+    /* ===== Mobile ===== */
     @media (max-width: 820px){
-      .hero{ padding:16px 14px 0; padding-bottom: 170px; }
+      /* 不再动 background-attachment（因为背景在 body::after 里了） */
+      .hero{ padding:16px 14px 0; }
       .hero h1{ font-size:24px; }
       .hero p{ font-size:15px; }
 
@@ -238,6 +244,7 @@
         row-gap:22px;
         margin-top:60px;
       }
+
       .marker.left,.marker.right{ justify-self:center; }
 
       .marker{
@@ -257,10 +264,7 @@
         white-space:nowrap;
       }
 
-      /* ✅ Android Chrome 底部栏更高：把提示抬上去 */
-      .scroll-down{
-        bottom: 90px;
-      }
+      .scroll-down{ bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); }
       .scroll-down span{ font-size:15px; }
       .scroll-down svg{ width:24px; height:24px; }
 
@@ -319,15 +323,15 @@
       <h2></h2>
       <p>
         I am a very shy person. I rarely express myself, but I deeply treasure my memories.
-        I take photos to remember what I felt, who I met, and the smallest things that mattered. <br><br>
+I take photos to remember what I felt, who I met, and the smallest things that mattered. <br>
 
-        Photos can never fade (thanks to god-damn technology), but my stupid brain still does.
-        I was inspired by a conversation with someone about photography (and other crazy things), and tah-dah! Here is a place to keep those memories.<br><br>
+Photos can never fade (thanks to god-damn technology), but my stupid brain still does.
+I was inspired by a conversation with someone about photography (and other crazy things), and tah-dah! Here is a place to keep those memories.<br>
 
-        All of this is truly honest to me and to the people I have met.
-        If you like to dig deeper, I hope you will enjoy the journey with me/ my memories.<br><br>
+All of this is truly honest to me and to the people I have met.
+If you like to dig deeper, I hope you will enjoy the journey with me/ my memories.<br>
 
-        (The “Sport” section is another one of my crazy dreams.)
+(The “Sport” section is another one of my crazy dreams.)
       </p>
     </div>
   </section>
@@ -337,7 +341,7 @@
       document.getElementById('manifesto').scrollIntoView({ behavior:'smooth' });
     }
 
-    // 一滚切屏（桌面滚轮）
+    // 一滚切屏
     let wheelLock = false;
     window.addEventListener('wheel', (e) => {
       if (wheelLock) return;
@@ -358,13 +362,32 @@
       }
     }, { passive:true });
 
+    // 第二屏渐暗
     function updateDim(){
       const y = window.scrollY;
       const vh = window.innerHeight;
       document.body.classList.toggle('dim', y > 0.40 * vh);
     }
     window.addEventListener('scroll', updateDim, { passive:true });
-    window.addEventListener('load', updateDim);
+
+    // ✅ 修复：Chrome 手机端 + scroll-snap 首屏不显示 scroll hint
+    window.addEventListener('load', () => {
+      updateDim();
+
+      const ua = navigator.userAgent || "";
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+      const isChrome = /Chrome/i.test(ua) && !/CriOS/i.test(ua) && !/EdgiOS/i.test(ua);
+      // iOS Chrome 会是 CriOS，这里也可以一并处理；但你说的是 Chrome 手机端，就一起兜住
+      const isChromeLike = /Chrome|CriOS/i.test(ua);
+
+      if (isMobile && isChromeLike && window.scrollY === 0) {
+        // “唤醒”滚动系统（肉眼不可见）
+        requestAnimationFrame(() => {
+          window.scrollTo(0, 1);
+          requestAnimationFrame(() => window.scrollTo(0, 0));
+        });
+      }
+    });
   </script>
 </body>
 </html>
