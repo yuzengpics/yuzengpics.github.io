@@ -26,357 +26,135 @@ body{
   height:72px;
   background:rgba(10,20,35,0.94);
   backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
   z-index:2000;
 }
 
-/* Lightbox opened: disable blur to reduce repaint cost */
 body.lb-open .navbar{
   backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
 }
 
-.nav-inner{
-  max-width:1200px;
-  height:100%;
-  margin:0 auto;
-  padding:0 28px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-
-/* ===== Brand ===== */
-.brand{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  text-decoration:none;
-}
-.brand-logo{ height:48px; width:auto; }
-
-.brand-text{ display:flex; flex-direction:column; line-height:1; }
-.brand-name{
-  font-family:"Montserrat",sans-serif;
-  font-weight:700;
-  font-size:17px;
-  letter-spacing:1.6px;
-  color:#fff;
-}
-.brand-sub{
-  margin-top:4px;
-  font-family:"Playfair Display",serif;
-  font-style:italic;
-  font-size:14px;
-  color:rgba(255,255,255,0.8);
-}
-
-/* ===== Nav links ===== */
-.nav-links{ display:flex; gap:34px; align-items:center; }
-.nav-links a{
-  color:rgba(255,255,255,0.85);
-  text-decoration:none;
-  font-size:16px;
-  padding:6px 0;
-  border-bottom:2px solid transparent;
-  white-space:nowrap;
-}
-.nav-links a:hover{ color:#fff; }
-.nav-links a.active{ color:#fff; border-bottom-color:#fff; }
-
-/* ===== Hero ===== */
-.hero{
-  margin-top:72px;
-  padding:110px 0 80px;
-  text-align:center;
-  color:#fff;
-  background:
-    linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)),
-    url("photo_x/E_x.jpg") center/cover no-repeat;
-}
-.hero h1{ margin:0 0 10px; font-size:56px; }
-.hero p{ margin:0; font-size:18px; opacity:.9; }
-
-/* ===== Page container ===== */
+/* ===== Masonry ===== */
 main.page{
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 28px 20px 80px;
+  max-width:1100px;
+  margin:0 auto;
+  padding:120px 20px 80px;
 }
 
-/* ===== Masonry (album covers) ===== */
 .masonry{
-  column-count: 3;
-  column-gap: 16px;
+  column-count:3;
+  column-gap:16px;
 }
-@media (max-width: 950px){ .masonry{ column-count: 2; } }
-@media (max-width: 650px){ .masonry{ column-count: 1; } }
+@media (max-width:950px){ .masonry{column-count:2;} }
+@media (max-width:650px){ .masonry{column-count:1;} }
 
-.album{
-  break-inside: avoid;
-  margin-bottom: 16px;
-  cursor: pointer;
-}
-
+.album{ break-inside:avoid; margin-bottom:16px; cursor:pointer; }
 .album img{
-  width: 100%;
-  display:block;
-  border-radius: 12px;
-  box-shadow: 0 10px 22px rgba(0,0,0,0.10);
-  transition: transform .18s ease, box-shadow .18s ease;
-}
-.album:hover img{
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(0,0,0,0.14);
+  width:100%;
+  border-radius:12px;
+  box-shadow:0 10px 22px rgba(0,0,0,.12);
 }
 .album p{
-  margin: 8px 0 0;
+  margin:8px 0 0;
   text-align:center;
-  font-size: 14px;
-  color:#444;
+  font-size:14px;
 }
 
 /* ===== Lightbox ===== */
 .lightbox{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.86);
-  display: none;
-  flex-direction: column;
-  z-index: 3000;
-
-  /* ✅ Desktop: allow scroll if caption is long */
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.86);
+  display:none;
+  z-index:3000;
+  overflow-y:auto;
 }
-.lightbox.open{ display:flex; }
+.lightbox.open{ display:block; }
 
-/* stage (desktop + base) */
-.lightbox .lb-stage{
-  /* ✅ Desktop: don't force full-height; allow page to grow for long caption */
-  min-height: auto;
-
+.lb-stage{
+  min-height:100vh;
   display:flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  padding-left: 16px;
-  padding-right: 16px;
-
-  /* keep image away from close btn */
-  padding-top: 70px;
-  padding-bottom: 22px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:80px 16px 40px;
 }
 
-.lightbox img{
-  width: auto;
-  max-width: 92vw;
-
-  /* keep image comfortable on desktop; caption can scroll below */
-  max-height: 80vh;
-
-  border-radius: 12px;
-  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-  display:block;
-  object-fit: contain;
+.lb-stage img{
+  max-width:92vw;
+  max-height:80vh;
+  border-radius:12px;
+  box-shadow:0 18px 40px rgba(0,0,0,.35);
 }
 
-/* Smooth swap */
-#lb-img{
-  opacity: 0;
-  transition: opacity .18s ease;
-  will-change: opacity;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
-.lightbox.open #lb-img{ opacity: 1; }
-
-/* Desktop caption (below image, scroll with page) */
-.lightbox .caption{
-  color: #fff;
-  margin-top: 12px;
-  text-align: center;
-  max-width: 920px;
-  line-height: 1.55;
-  font-size: 15px;
-  opacity: 0.95;
-  padding: 0 10px 18px;
-  white-space: pre-line;
-
-  /* ✅ prevent weird clipping in some browsers */
-  word-break: break-word;
+.caption{
+  color:#fff;
+  margin-top:14px;
+  max-width:900px;
+  text-align:center;
+  line-height:1.6;
+  white-space:pre-line;
 }
 
-/* Buttons */
-.lb-close, .lb-prev, .lb-next{
-  position: absolute;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.25);
-  color: #fff;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  font-size: 26px;
-  line-height: 40px;
-  cursor: pointer;
-  user-select: none;
+/* ===== UI layer (FIXED, not scrolling) ===== */
+.lb-ui{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:4000;
 }
 
+/* Close button */
 .lb-close{
-  position: fixed;
-  top: 18px;
-  right: 22px;
-  z-index: 4000;
-  font-size: 30px;
-  line-height: 38px;
-  background: rgba(0,0,0,0.55);
-  border-color: rgba(255,255,255,0.22);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  pointer-events:auto;
+  position:fixed;
+  top:16px;
+  right:16px;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:rgba(0,0,0,.55);
+  color:#fff;
+  font-size:30px;
+  line-height:42px;
+  text-align:center;
+  border:1px solid rgba(255,255,255,.25);
+  cursor:pointer;
 }
 
-.lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
-.lb-next{ right: 18px; top: 50%; transform: translateY(-50%); }
-
-.lb-prev[disabled], .lb-next[disabled]{
-  opacity: .45;
-  cursor: not-allowed;
+/* Arrows */
+.lb-prev, .lb-next{
+  pointer-events:auto;
+  position:fixed;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+  font-size:26px;
+  line-height:40px;
+  cursor:pointer;
 }
 
-/* Mobile caption sheet (desktop off) */
-.caption-sheet{ display:none; }
+.lb-prev{ left:14px; }
+.lb-next{ right:14px; }
 
-/* ===== Mobile nav behavior ===== */
+/* Hide arrows when single image */
+.lb-ui.single .lb-prev,
+.lb-ui.single .lb-next{
+  display:none;
+}
+
+/* Mobile tweaks */
 @media (max-width:700px){
-  .navbar{ height:64px; }
-  .nav-inner{ padding:0 18px; }
-  .brand-logo{ height:28px; }
-
-  .nav-links{
-    gap:16px;
-    overflow-x:auto;
-    max-width:70vw;
-    scrollbar-width:none;
-    flex-wrap: nowrap;
+  .lb-stage{
+    padding-top:calc(env(safe-area-inset-top) + 72px);
   }
-  .nav-links::-webkit-scrollbar{ display:none; }
-  .nav-links a{ font-size:13px; }
-
-  .hero{ margin-top:64px; padding:90px 0 60px; }
-  .hero h1{ font-size:40px; }
-  .hero p{ font-size:16px; }
-
-  .lightbox{
-    overflow: hidden; /* mobile page不滚动，caption在sheet里滚 */
-    touch-action: pan-y;
-  }
-
-  .lightbox .lb-stage{
-    min-height: 100dvh;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-    justify-content: center;
-  }
-
-  .lightbox img{
-    max-height: 78dvh;
-    max-width: 92vw;
-  }
-
-  /* Hide desktop caption on mobile */
-  .lightbox .caption{ display:none; }
-
-  /* ✅ Mobile arrows fixed to viewport */
-  .lb-prev, .lb-next{
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 3600;
-    transition: top .18s ease;
-  }
-  .lb-prev{ left: 12px; }
-  .lb-next{ right: 12px; }
-
-  /* ✅ When caption sheet opens, lift arrows upward */
-  .lightbox.cap-open .lb-prev,
-  .lightbox.cap-open .lb-next{
-    top: calc(50% - 90px); /* 你想更高：-110px；更低：-70px */
-  }
-
-  /* close button safe area */
   .lb-close{
-    top: calc(env(safe-area-inset-top, 0px) + 12px);
-    right: calc(env(safe-area-inset-right, 0px) + 12px);
-  }
-
-  /* Mobile bottom sheet */
-  .caption-sheet{
-    display:block;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 3500;
-
-    max-height: 72dvh;
-
-    background: rgba(0,0,0,0.70);
-    border-top: 1px solid rgba(255,255,255,0.16);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-
-    transform: translateY(calc(100% - 74px));
-    transition: transform .22s ease;
-    will-change: transform;
-
-    display:flex;
-    flex-direction: column;
-
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  .lightbox.cap-open .caption-sheet{
-    transform: translateY(0);
-  }
-
-  .cap-handle{
-    height: 74px;
-    padding: 10px 14px 8px;
-    display:flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 8px;
-    user-select:none;
-    -webkit-user-select:none;
-  }
-  .cap-grip{
-    width: 46px;
-    height: 4px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.35);
-    margin: 0 auto;
-  }
-  .cap-title{
-    color:#fff;
-    font-size: 13px;
-    opacity: .90;
-    text-align:center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .cap-body{
-    padding: 0 16px 16px;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    color:#fff;
-    opacity: .95;
-    line-height: 1.55;
-    font-size: 14px;
-    white-space: pre-line;
+    top:calc(env(safe-area-inset-top) + 12px);
+    right:calc(env(safe-area-inset-right) + 12px);
   }
 }
 </style>
@@ -384,395 +162,99 @@ main.page{
 
 <body>
 
-<nav class="navbar">
-  <div class="nav-inner">
-    <a class="brand" href="index.html">
-      <img src="photo_x/Logo.png" alt="Yu Zeng logo" class="brand-logo">
-      <div class="brand-text">
-        <span class="brand-name">Yu Zeng</span>
-        <span class="brand-sub">Photography</span>
-      </div>
-    </a>
-
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a class="active" href="memento.html">Memento</a>
-      <a href="shutter.html">Shutter</a>
-      <a href="sport.html">Sport</a>
-      <a href="contact.html">Contact</a>
-    </div>
-  </div>
-</nav>
-
-<header class="hero">
-  <h1>Memento</h1>
-  <p>Places, people, and moments I remember.</p>
-</header>
+<nav class="navbar"></nav>
 
 <main class="page">
   <div class="masonry">
 
     <div class="album"
       data-title="Liverpool"
-      data-caption='Liverpool is a place full of memories.
-The city is gloomy and unapologetically devoted to its drinking culture.
-I met many people, and along the way, with two truly amazing Chinese friends who made Liverpool feel like home.
-We made it to a million bars, hit my head in the climbing gym with Olivia, fell off the wall, and asked Chengwang to take care of me,
-stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn... 
-      The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
-      data-images="photo_x/DSC00741_x.jpg,photo_x/DSC01866_x.jpg,photo_x/DSC00395_x.jpg,photo_x/DSC01801_x.jpg,photo_x/DSC00721_x.jpg,photo_x/DSC00197_x.jpg,photo_x/DSC00605_x.jpg">
-      <img src="photo_x/DSC00741_x.jpg" alt="Liverpool cover" loading="lazy" decoding="async">
+      data-caption="Liverpool is a place full of memories."
+      data-images="photo_x/DSC00741_x.jpg,photo_x/DSC01866_x.jpg">
+      <img src="photo_x/DSC00741_x.jpg">
       <p>Liverpool</p>
     </div>
 
     <div class="album"
-      data-title="Northern Ireland"
-      data-caption="A conference for me is boring (sometimes)."
-      data-images="photo_x/IMG_7043.JPEG">
-      <img src="photo_x/IMG_7043.JPEG" alt="Northern Ireland cover" loading="lazy" decoding="async">
-      <p>Great adventure with the prince in Northern Ireland</p>
-    </div>
-    
-    <div class="album"
       data-title="Tibet"
       data-caption="Tibet, 2025."
       data-images="photo_x/DSC07427_x.jpg">
-      <img src="photo_x/DSC07427_x.jpg" alt="Northern Ireland cover" loading="lazy" decoding="async">
-      <p>Tibet><p>
-    </div>
-  
-
-   <div class="album"
-      data-title="Days in Bozel"
-      data-caption="Days in Bozel."
-      data-images="photo_x/DSC07546_x.jpg">
-      <img src="photo_x/DSC07546_x.jpg" alt="Days in Bozel" loading="lazy" decoding="async">
-      <p>Days in Bozel</p>
-   </div>
-    
-  </div>
-
-  <div id="lightbox" class="lightbox" aria-hidden="true">
-    <button class="lb-close" aria-label="Close">&times;</button>
-    <button class="lb-prev" aria-label="Previous">&#8249;</button>
-
-    <div class="lb-stage">
-      <img id="lb-img" src="" alt="" decoding="async" draggable="false">
-      <div class="caption" id="lb-caption"></div>
+      <img src="photo_x/DSC07427_x.jpg">
+      <p>Tibet</p>
     </div>
 
-    <button class="lb-next" aria-label="Next">&#8250;</button>
-
-    <div class="caption-sheet" id="capSheet" aria-hidden="true">
-      <div class="cap-handle" id="capHandle">
-        <div class="cap-grip"></div>
-        <div class="cap-title" id="capTitle">Swipe up for caption</div>
-      </div>
-      <div class="cap-body" id="capBody"></div>
-    </div>
   </div>
 </main>
 
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox">
+  <div class="lb-stage">
+    <img id="lb-img">
+    <div class="caption" id="lb-caption"></div>
+  </div>
+</div>
+
+<!-- Fixed UI -->
+<div class="lb-ui" id="lbUI">
+  <button class="lb-close">&times;</button>
+  <button class="lb-prev">&#8249;</button>
+  <button class="lb-next">&#8250;</button>
+</div>
+
 <script>
-  const lb = document.getElementById('lightbox');
-  const lbImg = document.getElementById('lb-img');
-  const lbCaption = document.getElementById('lb-caption');
-  const btnClose = document.querySelector('.lb-close');
-  const btnPrev = document.querySelector('.lb-prev');
-  const btnNext = document.querySelector('.lb-next');
+const lb = document.getElementById('lightbox');
+const lbUI = document.getElementById('lbUI');
+const lbImg = document.getElementById('lb-img');
+const lbCap = document.getElementById('lb-caption');
+const btnClose = document.querySelector('.lb-close');
+const btnPrev = document.querySelector('.lb-prev');
+const btnNext = document.querySelector('.lb-next');
 
-  const capSheet = document.getElementById('capSheet');
-  const capHandle = document.getElementById('capHandle');
-  const capTitle = document.getElementById('capTitle');
-  const capBody = document.getElementById('capBody');
+let images = [];
+let index = 0;
+let title = '';
+let caption = '';
 
-  let images = [];
-  let index = 0;
-  let title = '';
-  let caption = '';
+function render(){
+  const src = images[index];
+  lbImg.src = src;
+  lbCap.textContent = title + (caption ? "\n\n" + caption : "");
+}
 
-  let isSwitching = false;
-  let unlockTimer = null;
+function openLightbox(list,t,c){
+  images = list;
+  index = 0;
+  title = t || '';
+  caption = c || '';
 
-  function isMobileNow(){
-    return window.matchMedia("(max-width:700px)").matches;
-  }
+  lb.classList.add('open');
+  lbUI.classList.toggle('single', images.length <= 1);
 
-  function preload(src){
-    if(!src) return;
-    const im = new Image();
-    im.decoding = "async";
-    im.src = src;
-  }
+  document.body.classList.add('lb-open');
+  document.body.style.overflow = 'hidden';
 
-  function safeIndex(i){
-    if(!images.length) return 0;
-    return (i + images.length) % images.length;
-  }
+  render();
+}
 
-  function setNavDisabled(disabled){
-    btnPrev.disabled = disabled;
-    btnNext.disabled = disabled;
-  }
+function closeLightbox(){
+  lb.classList.remove('open');
+  document.body.style.overflow = '';
+  document.body.classList.remove('lb-open');
+}
 
-  function lockIfMobile(){
-    if(!isMobileNow()) return;
+btnClose.onclick = closeLightbox;
+btnPrev.onclick = ()=>{ if(images.length>1){ index=(index-1+images.length)%images.length; render(); }};
+btnNext.onclick = ()=>{ if(images.length>1){ index=(index+1)%images.length; render(); }};
 
-    isSwitching = true;
-    setNavDisabled(true);
-
-    if(unlockTimer) clearTimeout(unlockTimer);
-    unlockTimer = setTimeout(() => {
-      isSwitching = false;
-      setNavDisabled(false);
-      unlockTimer = null;
-    }, 500);
-  }
-
-  function unlock(){
-    if(unlockTimer){
-      clearTimeout(unlockTimer);
-      unlockTimer = null;
-    }
-    isSwitching = false;
-    setNavDisabled(false);
-  }
-
-  function closeCaptionSheet(){
-    lb.classList.remove('cap-open');
-    if(capSheet) capSheet.setAttribute('aria-hidden','true');
-  }
-
-  function openCaptionSheet(){
-    lb.classList.add('cap-open');
-    if(capSheet) capSheet.setAttribute('aria-hidden','false');
-  }
-
-  function render(){
-    if(!images.length) return;
-
-    const src = images[index];
-    const counter = `${index + 1}/${images.length}`;
-    lbImg.alt = title ? `${title} (${counter})` : `Photo ${counter}`;
-
-    lbImg.style.opacity = 0;
-
-    preload(images[safeIndex(index)]);
-    preload(images[safeIndex(index + 1)]);
-    preload(images[safeIndex(index - 1)]);
-
-    lockIfMobile();
-
-    const tmp = new Image();
-    tmp.decoding = "async";
-
-    tmp.onload = () => {
-      lbImg.src = src;
-      requestAnimationFrame(() => { lbImg.style.opacity = 1; });
-      unlock();
-    };
-
-    tmp.onerror = () => {
-      lbImg.src = src;
-      requestAnimationFrame(() => { lbImg.style.opacity = 1; });
-      unlock();
-    };
-
-    tmp.src = src;
-
-    lbCaption.textContent = title
-      ? `${title} — ${counter}${caption ? " · " + caption : ""}`
-      : counter;
-
-    if(capBody){
-      const full = title
-        ? `${title} — ${counter}${caption ? "\n\n" + caption : ""}`
-        : counter;
-      capBody.textContent = full;
-      capTitle.textContent = title ? `${title} — ${counter}` : counter;
-      capBody.scrollTop = 0;
-      closeCaptionSheet();
-    }
-  }
-
-  function openLightbox(list, t, c){
-    images = list;
-    index = 0;
-    title = t || '';
-    caption = c || '';
-
-    lb.classList.add('open');
-    lb.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
-    document.body.classList.add('lb-open');
-
-    render();
-  }
-
-  function closeLightbox(){
-    lb.classList.remove('open');
-    lb.classList.remove('cap-open');
-    lb.setAttribute('aria-hidden','true');
-    document.body.style.overflow = '';
-    document.body.classList.remove('lb-open');
-    unlock();
-  }
-
-  function prev(){
-    if(images.length <= 1) return;
-    if(isMobileNow() && isSwitching) return;
-    index = safeIndex(index - 1);
-    render();
-  }
-
-  function next(){
-    if(images.length <= 1) return;
-    if(isMobileNow() && isSwitching) return;
-    index = safeIndex(index + 1);
-    render();
-  }
-
-  document.querySelectorAll('.album').forEach(card => {
-    card.addEventListener('click', () => {
-      const list = (card.dataset.images || '')
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-
-      if(!list.length) return;
-      openLightbox(list, card.dataset.title, card.dataset.caption);
-    });
-  });
-
-  btnClose.addEventListener('click', closeLightbox);
-  btnPrev.addEventListener('click', prev);
-  btnNext.addEventListener('click', next);
-
-  lb.addEventListener('click', (e) => {
-    if(e.target === lb) closeLightbox();
-  });
-
-  window.addEventListener('keydown', (e) => {
-    if(!lb.classList.contains('open')) return;
-    if(e.key === 'Escape') closeLightbox();
-    if(e.key === 'ArrowLeft') prev();
-    if(e.key === 'ArrowRight') next();
-  });
-
-  if(capHandle && capSheet){
-    capHandle.addEventListener('click', () => {
-      if(!isMobileNow()) return;
-      if(lb.classList.contains('cap-open')) closeCaptionSheet();
-      else openCaptionSheet();
-    });
-
-    let capStartY = 0;
-    let capDy = 0;
-    let capTracking = false;
-
-    capHandle.addEventListener('touchstart', (e) => {
-      if(!isMobileNow()) return;
-      if(!e.touches || e.touches.length !== 1) return;
-      capStartY = e.touches[0].clientY;
-      capDy = 0;
-      capTracking = true;
-    }, { passive:true });
-
-    capHandle.addEventListener('touchmove', (e) => {
-      if(!capTracking) return;
-      if(!isMobileNow()) return;
-      if(!e.touches || e.touches.length !== 1) return;
-      capDy = e.touches[0].clientY - capStartY;
-      if(Math.abs(capDy) > 6) e.preventDefault();
-    }, { passive:false });
-
-    capHandle.addEventListener('touchend', () => {
-      if(!capTracking) return;
-      capTracking = false;
-      if(!isMobileNow()) return;
-
-      if(capDy < -30) openCaptionSheet();
-      else if(capDy > 30) closeCaptionSheet();
-    }, { passive:true });
-  }
-
-  let startX = 0, startY = 0;
-  let tracking = false;
-  let lockedDirection = null;
-  const SWIPE_MIN = 45;
-  const LOCK_THRESHOLD = 10;
-
-  function onTouchStart(e){
-    if(!lb.classList.contains('open')) return;
-    if(!isMobileNow()) return;
-    if(!e.touches || e.touches.length !== 1) return;
-
-    const path = e.composedPath ? e.composedPath() : [];
-    if(path.includes(capSheet)) return;
-
-    const t = e.touches[0];
-    startX = t.clientX;
-    startY = t.clientY;
-    tracking = true;
-    lockedDirection = null;
-  }
-
-  function onTouchMove(e){
-    if(!tracking) return;
-    if(!lb.classList.contains('open')) return;
-    if(!isMobileNow()) return;
-    if(!e.touches || e.touches.length !== 1) return;
-
-    const t = e.touches[0];
-    const dx = t.clientX - startX;
-    const dy = t.clientY - startY;
-
-    if(!lockedDirection){
-      if(Math.abs(dx) > LOCK_THRESHOLD || Math.abs(dy) > LOCK_THRESHOLD){
-        lockedDirection = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
-      } else {
-        return;
-      }
-    }
-
-    if(lockedDirection === "x"){
-      e.preventDefault();
-    }
-  }
-
-  function onTouchEnd(e){
-    if(!tracking) return;
-    tracking = false;
-
-    if(!lb.classList.contains('open')) return;
-    if(!isMobileNow()) return;
-    if(lockedDirection !== "x") return;
-
-    const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
-    if(!t) return;
-
-    const dx = t.clientX - startX;
-    const dy = t.clientY - startY;
-
-    if(Math.abs(dx) < SWIPE_MIN) return;
-    if(Math.abs(dx) < Math.abs(dy)) return;
-
-    if(dx < 0) next();
-    else prev();
-  }
-
-  lb.addEventListener('touchstart', onTouchStart, { passive: true });
-  lb.addEventListener('touchmove', onTouchMove, { passive: false });
-  lb.addEventListener('touchend', onTouchEnd, { passive: true });
-
-  let lastTap = 0;
-  lbImg.addEventListener('touchend', () => {
-    if(!lb.classList.contains('open')) return;
-    if(!isMobileNow()) return;
-    const now = Date.now();
-    if(now - lastTap < 300) closeLightbox();
-    lastTap = now;
-  }, { passive: true });
+document.querySelectorAll('.album').forEach(a=>{
+  a.onclick=()=>{
+    openLightbox(
+      a.dataset.images.split(',').map(s=>s.trim()),
+      a.dataset.title,
+      a.dataset.caption
+    );
+  };
+});
 </script>
 
 </body>
