@@ -144,19 +144,22 @@ main.page{
   display: none;
   flex-direction: column;
   z-index: 3000;
-  padding: 20px;
 
-  /* ✅ Fix mobile portrait: allow vertical scroll inside lightbox */
+  /* ✅ allow vertical scroll inside lightbox for portrait photos */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 
   /* allow vertical pan; we intercept horizontal swipe */
   touch-action: pan-y;
+
+  /* keep padding consistent */
+  padding: 18px 18px 22px;
 }
 .lightbox.open{ display:flex; }
 
-/* Center content with a safe top gap for the close button */
+/* A stage to center content but still allow scroll when needed */
 .lightbox .lb-stage{
+  width: 100%;
   min-height: calc(100vh - 40px);
   display:flex;
   flex-direction: column;
@@ -166,13 +169,19 @@ main.page{
   padding-bottom: 18px;
 }
 
-/* Image sizing: reserve space for buttons + caption */
+/* Image sizing: leave space for top close button and caption */
 .lightbox img{
+  width: auto;
   max-width: 92vw;
-  max-height: calc(100vh - 160px);
+  max-height: calc(100vh - 170px);
+  height: auto;
+  object-fit: contain;
+
   border-radius: 12px;
   box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-  margin-top: 52px; /* ✅ ensure it never sits under the close button */
+
+  /* ✅ ensure not under close button */
+  margin-top: 56px;
 }
 
 /* Smooth swap */
@@ -212,14 +221,16 @@ main.page{
   user-select: none;
 }
 
-/* ✅ Close button fixed to viewport + safe-area, always reachable */
+/* ✅ Close always reachable (safe-area aware) */
 .lb-close{
   position: fixed;
-  top: env(safe-area-inset-top, 18px);
-  right: env(safe-area-inset-right, 22px);
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: calc(env(safe-area-inset-right, 0px) + 14px);
   z-index: 4000;
+
   font-size: 30px;
   line-height: 38px;
+
   background: rgba(0,0,0,0.55);
   border-color: rgba(255,255,255,0.22);
   backdrop-filter: blur(6px);
@@ -229,11 +240,6 @@ main.page{
 /* keep prev/next as-is */
 .lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
 .lb-next{ right: 18px; top: 50%; transform: translateY(-50%); }
-
-.lb-prev[disabled], .lb-next[disabled]{
-  opacity: .45;
-  cursor: not-allowed;
-}
 
 /* ===== Mobile nav behavior ===== */
 @media (max-width:700px){
@@ -256,10 +262,13 @@ main.page{
   .hero h1{ font-size:40px; }
   .hero p{ font-size:16px; }
 
-  /* a bit more breathing room on small screens */
+  .lightbox{
+    padding: 14px 14px 18px;
+  }
+
   .lightbox img{
-    max-height: calc(100vh - 170px);
-    margin-top: 56px;
+    max-height: calc(100vh - 180px);
+    margin-top: 60px;
   }
 }
 </style>
@@ -344,8 +353,17 @@ stayed at Finn&apos;s place watching dramas.'
   let title = '';
   let caption = '';
 
-  // Prevent mobile spam-click lockups
-  let isSwitching = false;
+  // ✅ Remove the annoying "lock": keep UX responsive
+  // Use a tiny throttle instead (prevents spam-trigger crashes on mobile)
+  let lastNavAt = 0;
+  const NAV_THROTTLE_MS = 150;
+
+  function canNavigate(){
+    const now = Date.now();
+    if(now - lastNavAt < NAV_THROTTLE_MS) return false;
+    lastNavAt = now;
+    return true;
+  }
 
   function preload(src){
     if(!src) return;
@@ -359,11 +377,6 @@ stayed at Finn&apos;s place watching dramas.'
     return (i + images.length) % images.length;
   }
 
-  function setNavDisabled(disabled){
-    btnPrev.disabled = disabled;
-    btnNext.disabled = disabled;
-  }
-
   function render(){
     if(!images.length) return;
 
@@ -371,39 +384,33 @@ stayed at Finn&apos;s place watching dramas.'
     const counter = `${index + 1}/${images.length}`;
     lbImg.alt = title ? `${title} (${counter})` : `Photo ${counter}`;
 
+    // Fade out immediately
     lbImg.style.opacity = 0;
 
+    // Preload current + neighbors
     preload(images[safeIndex(index)]);
     preload(images[safeIndex(index + 1)]);
     preload(images[safeIndex(index - 1)]);
 
-    isSwitching = true;
-    setNavDisabled(true);
-
+    // Load into temp image then swap (prevents blank stutter)
     const tmp = new Image();
     tmp.decoding = "async";
-
     tmp.onload = () => {
       lbImg.src = src;
       requestAnimationFrame(() => { lbImg.style.opacity = 1; });
-      isSwitching = false;
-      setNavDisabled(false);
     };
-
     tmp.onerror = () => {
+      // fallback: still swap, so user sees broken image rather than "stuck"
       lbImg.src = src;
       requestAnimationFrame(() => { lbImg.style.opacity = 1; });
-      isSwitching = false;
-      setNavDisabled(false);
     };
-
     tmp.src = src;
 
     lbCaption.textContent = title
       ? `${title} — ${counter}${caption ? " · " + caption : ""}`
       : counter;
 
-    // When switching images on mobile, snap scroll to top so close button is always reachable
+    // ✅ Keep close button reachable and avoid weird scroll positions
     lb.scrollTop = 0;
   }
 
@@ -427,20 +434,18 @@ stayed at Finn&apos;s place watching dramas.'
     lb.setAttribute('aria-hidden','true');
     document.body.style.overflow = '';
     document.body.classList.remove('lb-open');
-    isSwitching = false;
-    setNavDisabled(false);
   }
 
   function prev(){
     if(images.length <= 1) return;
-    if(isSwitching) return;
+    if(!canNavigate()) return;
     index = safeIndex(index - 1);
     render();
   }
 
   function next(){
     if(images.length <= 1) return;
-    if(isSwitching) return;
+    if(!canNavigate()) return;
     index = safeIndex(index + 1);
     render();
   }
@@ -462,7 +467,7 @@ stayed at Finn&apos;s place watching dramas.'
   btnPrev.addEventListener('click', prev);
   btnNext.addEventListener('click', next);
 
-  // Click outside image to close (still works)
+  // Click outside image to close
   lb.addEventListener('click', (e) => { if(e.target === lb) closeLightbox(); });
 
   // Keyboard navigation
@@ -547,6 +552,28 @@ stayed at Finn&apos;s place watching dramas.'
     if(now - lastTap < 300) closeLightbox();
     lastTap = now;
   }, { passive: true });
+
+  /* =========================
+     Page-level warm preload:
+     Preload first 3 images of each album after page load
+     ========================= */
+  window.addEventListener('load', () => {
+    const run = () => {
+      document.querySelectorAll('.album').forEach(album => {
+        const imgs = (album.dataset.images || '')
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+        imgs.slice(0, 3).forEach(src => preload(src));
+      });
+    };
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(run, { timeout: 2000 });
+    } else {
+      setTimeout(run, 1200);
+    }
+  });
 </script>
 
 </body>
