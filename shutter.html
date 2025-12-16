@@ -12,11 +12,23 @@
 <style>
 *{ box-sizing:border-box; }
 
+html, body{ height:100%; }
+
 body{
   margin:0;
   font-family: Arial, sans-serif;
   background:#e9edf2;
   color:#111;
+}
+
+/* ✅ Strong scroll lock (prevents Chrome scroll-through / chaining) */
+body.lb-open{
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* ===== Navbar ===== */
@@ -150,6 +162,9 @@ main.page{
 
   /* allow vertical pan; JS will intercept horizontal swipe */
   touch-action: pan-y;
+
+  /* ✅ prevent scroll chaining */
+  overscroll-behavior: contain;
 }
 .lightbox.open{ display:block; }
 
@@ -226,13 +241,14 @@ main.page{
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 12px);
   right: calc(env(safe-area-inset-right, 0px) + 12px);
-  z-index: 4000;
+  z-index: 5000;
   font-size: 30px;
   line-height: 38px;
   background: rgba(0,0,0,0.55);
   border-color: rgba(255,255,255,0.22);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  pointer-events: auto;
 }
 
 .lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
@@ -365,15 +381,14 @@ main.page{
       <img src="photo_x/DSC03868_x.jpg" loading="lazy" decoding="async" alt="Hedgehog">
       <p>Hedgehog</p>
     </div>
- 
+
     <div class="album"
       data-title="Pray"
       data-caption="Wutai mountain"
       data-images="photo_x/DSC03285_x.jpg">
       <img src="photo_x/DSC03285_x.jpg" loading="lazy" decoding="async" alt="Pray">
       <p>Pray</p>
-  </div>
-     
+    </div>
 
   </div>
 
@@ -413,6 +428,9 @@ main.page{
   // mobile-only lock
   let isSwitching = false;
   let unlockTimer = null;
+
+  // ✅ scroll-lock state (fixes Chrome main-page scrolling)
+  let scrollY = 0;
 
   function isMobileNow(){
     return window.matchMedia("(max-width:700px)").matches;
@@ -467,9 +485,7 @@ main.page{
   }
 
   function setCaptionText(text){
-    // desktop
     lbCaptionDesktop.textContent = text;
-    // mobile drawer
     lbSheetBody.textContent = text;
   }
 
@@ -524,8 +540,11 @@ main.page{
 
     lb.classList.add('open');
     lb.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
+
+    // ✅ lock page scroll (prevents Chrome “main page moves”)
+    scrollY = window.scrollY || window.pageYOffset || 0;
     document.body.classList.add('lb-open');
+    document.body.style.top = `-${scrollY}px`;
 
     lb.scrollTop = 0;
     render();
@@ -534,8 +553,12 @@ main.page{
   function closeLightbox(){
     lb.classList.remove('open');
     lb.setAttribute('aria-hidden','true');
-    document.body.style.overflow = '';
+
+    // ✅ restore page scroll position
     document.body.classList.remove('lb-open');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollY);
+
     unlock();
   }
 
