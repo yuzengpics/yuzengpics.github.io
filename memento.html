@@ -169,17 +169,13 @@ main.page{
 /* stage (desktop + base) */
 .lightbox .lb-stage{
   min-height: auto;
-
   display:flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   padding-left: 16px;
   padding-right: 16px;
-
-  /* keep image away from close btn */
-  padding-top: 70px;
+  padding-top: 70px;   /* keep away from close btn */
   padding-bottom: 22px;
 }
 
@@ -187,7 +183,6 @@ main.page{
   width: auto;
   max-width: 92vw;
   max-height: 80vh;
-
   border-radius: 12px;
   box-shadow: 0 18px 40px rgba(0,0,0,0.35);
   display:block;
@@ -433,7 +428,7 @@ The city is gloomy and unapologetically devoted to its drinking culture.
 I met many people, and along the way, with two truly amazing Chinese friends who made Liverpool feel like home.
 We made it to a million bars, hit my head in the climbing gym with Olivia, fell off the wall, and asked Chengwang to take care of me,
 stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
-      The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
+The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
       data-images="photo_x/DSC00741_x.jpg,photo_x/DSC01866_x.jpg,photo_x/DSC00395_x.jpg,photo_x/DSC01801_x.jpg,photo_x/DSC00721_x.jpg,photo_x/DSC00197_x.jpg,photo_x/DSC00605_x.jpg">
       <img src="photo_x/DSC00741_x.jpg" alt="Liverpool cover" loading="lazy" decoding="async">
       <p>Liverpool</p>
@@ -564,6 +559,28 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
     if(capSheet) capSheet.setAttribute('aria-hidden','false');
   }
 
+  // ✅ remove only the duplicate prefix at the START of body (keep top title line)
+  function escapeRegExp(s){
+    return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+  function stripDupPrefixFromBody(rawBody, t, counter){
+    let body = (rawBody || "").trim();
+    if(!body) return "";
+
+    const tt = (t || "").trim();
+    if(!tt) return body;
+
+    const T = escapeRegExp(tt);
+    const C = escapeRegExp(counter);
+
+    // Allow: "Liverpool — 1/7", "Liverpool-1/7", "Liverpool 1/7" at start
+    const re1 = new RegExp("^\\s*" + T + "\\s*[—–-]\\s*" + C + "\\s*(?:[·•\\-–—]\\s*)?", "i");
+    const re2 = new RegExp("^\\s*" + T + "\\s+" + C + "\\s*(?:[·•\\-–—]\\s*)?", "i");
+
+    body = body.replace(re1, "").replace(re2, "").trim();
+    return body;
+  }
+
   function render(){
     if(!images.length) return;
 
@@ -605,16 +622,18 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
 
     tmp.src = src;
 
+    // ✅ caption: keep top line "Title — 1/7", body removes duplicate prefix if it exists
+    const bodyText = stripDupPrefixFromBody(caption, title, counter);
+
+    // Desktop caption: keep your preferred format
     lbCaption.textContent = title
-      ? `${title} — ${counter}${caption ? " · " + caption : ""}`
+      ? `${title} — ${counter}${bodyText ? "\n\n" + bodyText : ""}`
       : counter;
 
+    // Mobile sheet: title line only + body only
     if(capBody){
-      const full = title
-        ? `${title} — ${counter}${caption ? "\n\n" + caption : ""}`
-        : counter;
-      capBody.textContent = full;
       capTitle.textContent = title ? `${title} — ${counter}` : counter;
+      capBody.textContent = bodyText || "";
       capBody.scrollTop = 0;
       closeCaptionSheet();
     }
@@ -691,6 +710,7 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
     if(e.key === 'ArrowRight') next();
   });
 
+  // caption sheet toggle + swipe
   if(capHandle && capSheet){
     capHandle.addEventListener('click', () => {
       if(!isMobileNow()) return;
@@ -728,6 +748,7 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
     }, { passive:true });
   }
 
+  // swipe left/right for photos (mobile)
   let startX = 0, startY = 0;
   let tracking = false;
   let lockedDirection = null;
@@ -797,6 +818,7 @@ stayed at Finn&apos;s place watching dramas, outdoor bouldering with Martijn...
   lb.addEventListener('touchmove', onTouchMove, { passive: false });
   lb.addEventListener('touchend', onTouchEnd, { passive: true });
 
+  // double-tap image to close (mobile)
   let lastTap = 0;
   lbImg.addEventListener('touchend', () => {
     if(!lb.classList.contains('open')) return;
