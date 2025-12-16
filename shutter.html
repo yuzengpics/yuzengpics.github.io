@@ -11,7 +11,6 @@
 
 <style>
 *{ box-sizing:border-box; }
-
 html, body{ height:100%; }
 
 body{
@@ -21,7 +20,7 @@ body{
   color:#111;
 }
 
-/* ✅ Strong scroll lock (prevents Chrome scroll-through / chaining) */
+/* ✅ Strong scroll lock */
 body.lb-open{
   position: fixed;
   left: 0;
@@ -42,7 +41,6 @@ body.lb-open{
   z-index:2000;
 }
 
-/* Lightbox opened: disable blur to reduce repaint cost */
 body.lb-open .navbar{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
@@ -116,7 +114,7 @@ main.page{
   padding: 28px 20px 80px;
 }
 
-/* ===== Masonry (album covers) ===== */
+/* ===== Masonry ===== */
 .masonry{
   column-count: 3;
   column-gap: 16px;
@@ -156,19 +154,14 @@ main.page{
   display: none;
   z-index: 3000;
 
-  /* allow vertical scroll when needed */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 
-  /* allow vertical pan; JS will intercept horizontal swipe */
   touch-action: pan-y;
-
-  /* ✅ prevent scroll chaining */
   overscroll-behavior: contain;
 }
 .lightbox.open{ display:block; }
 
-/* Stage: center image in viewport */
 .lightbox .lb-stage{
   min-height: 100dvh;
   display:flex;
@@ -191,7 +184,6 @@ main.page{
   object-fit: contain;
 }
 
-/* Smooth swap */
 #lb-img{
   opacity: 0;
   transition: opacity .18s ease;
@@ -202,7 +194,7 @@ main.page{
 }
 .lightbox.open #lb-img{ opacity: 1; }
 
-/* Desktop caption (scrollable, never cut) */
+/* Desktop caption */
 .lb-caption-desktop{
   color:#fff;
   margin-top: 12px;
@@ -257,7 +249,7 @@ main.page{
   cursor: not-allowed;
 }
 
-/* ===== Mobile nav behavior + mobile caption drawer (click / swipe open) ===== */
+/* ===== Mobile: caption sheet (tap/swipe open) ===== */
 @media (max-width:700px){
   .navbar{ height:64px; }
   .nav-inner{ padding:0 18px; }
@@ -277,7 +269,6 @@ main.page{
   .hero h1{ font-size:40px; }
   .hero p{ font-size:16px; }
 
-  /* leave more room for drawer */
   .lightbox img{ max-height: calc(100dvh - 260px); }
 
   .lb-caption-desktop{ display:none; }
@@ -331,6 +322,18 @@ main.page{
     margin: 0 auto;
   }
 
+  /* ✅ top line in sheet */
+  .lb-sheet-title{
+    color:#fff;
+    font-size: 13px;
+    opacity: .90;
+    text-align:center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ✅ body only (no duplicated title) */
   .lb-sheet-body{
     padding: 0 16px 16px;
     overflow: auto;
@@ -419,9 +422,12 @@ main.page{
       <div class="lb-caption-desktop" id="lb-caption"></div>
     </div>
 
-    <!-- mobile caption drawer (tap/drag handle to open/close) -->
+    <!-- ✅ mobile caption drawer -->
     <div class="lb-sheet" id="lb-sheet" aria-hidden="true">
-      <div class="lb-grab" id="lb-grab"></div>
+      <!-- ✅ IMPORTANT: must have id="lb-grab" so JS can bind -->
+      <div class="lb-grab" id="lb-grab">
+        <div class="lb-sheet-title" id="lb-sheet-title">Swipe up for caption</div>
+      </div>
       <div class="lb-sheet-body" id="lb-sheet-body"></div>
     </div>
   </div>
@@ -431,7 +437,6 @@ main.page{
   const lb = document.getElementById('lightbox');
   const lbImg = document.getElementById('lb-img');
   const lbCaptionDesktop = document.getElementById('lb-caption');
-  const lbSheetBody = document.getElementById('lb-sheet-body');
 
   const btnClose = document.querySelector('.lb-close');
   const btnPrev = document.querySelector('.lb-prev');
@@ -439,17 +444,18 @@ main.page{
 
   const lbSheet = document.getElementById('lb-sheet');
   const lbGrab = document.getElementById('lb-grab');
+  const lbSheetTitle = document.getElementById('lb-sheet-title');
+  const lbSheetBody = document.getElementById('lb-sheet-body');
 
   let images = [];
   let index = 0;
   let title = '';
   let caption = '';
 
-  // mobile-only lock
   let isSwitching = false;
   let unlockTimer = null;
 
-  // ✅ scroll-lock state (fixes Chrome main-page scrolling)
+  // ✅ scroll-lock state
   let scrollY = 0;
 
   function isMobileNow(){
@@ -514,33 +520,43 @@ main.page{
     if(lbSheet) lbSheet.setAttribute('aria-hidden','false');
   }
 
-  // ✅ avoid duplicated "Title 1/7" if caption already contains it
-  function buildCleanCaption(counter){
-    let c = (caption || "").trim();
-    if(!c) return "";
+  function escapeRegExp(s){
+    return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
 
-    const t = (title || "").trim();
-    if(!t) return c;
+  // ✅ Remove duplicate "Title — 1/7" ONLY if it appears at start of caption
+  function stripDupPrefixFromBody(rawBody, t, counter){
+    let body = (rawBody || "").trim();
+    if(!body) return "";
 
-    // remove leading title/counter patterns if user pasted them into data-caption
-    const escapedT = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const re1 = new RegExp("^\\s*" + escapedT + "\\s*[—-]\\s*" + counter.replace("/", "\\/") + "\\s*(?:[·•\\-–—]\\s*)?", "i");
-    const re2 = new RegExp("^\\s*" + escapedT + "\\s+" + counter.replace("/", "\\/") + "\\s*(?:[·•\\-–—]\\s*)?", "i");
+    const tt = (t || "").trim();
+    if(!tt) return body;
 
-    c = c.replace(re1, "").replace(re2, "").trim();
-    return c;
+    const T = escapeRegExp(tt);
+    const C = escapeRegExp(counter);
+
+    const re1 = new RegExp("^\\s*" + T + "\\s*[—–-]\\s*" + C + "\\s*(?:[·•\\-–—]\\s*)?", "i");
+    const re2 = new RegExp("^\\s*" + T + "\\s+" + C + "\\s*(?:[·•\\-–—]\\s*)?", "i");
+
+    body = body.replace(re1, "").replace(re2, "").trim();
+    return body;
   }
 
   function setCaptionText(){
     const counter = `${index + 1}/${images.length}`;
-    const clean = buildCleanCaption(counter);
+    const topLine = title ? `${title} — ${counter}` : counter;
 
-    const text = (title || "").trim()
-      ? `${title} — ${counter}${clean ? "\n\n" + clean : ""}`
+    // Desktop: keep one block (title+counter + caption)
+    const cleanBody = stripDupPrefixFromBody(caption, title, counter);
+    const desktopText = title
+      ? `${title} — ${counter}${cleanBody ? "\n\n" + cleanBody : ""}`
       : counter;
 
-    lbCaptionDesktop.textContent = text;
-    lbSheetBody.textContent = text;
+    lbCaptionDesktop.textContent = desktopText;
+
+    // Mobile: top line in handle, body only (no duplicate title)
+    if(lbSheetTitle) lbSheetTitle.textContent = topLine;
+    if(lbSheetBody) lbSheetBody.textContent = cleanBody || "";
   }
 
   function render(){
@@ -578,10 +594,7 @@ main.page{
     tmp.src = src;
 
     setCaptionText();
-
-    // 每张图默认收起 caption sheet
-    closeSheet();
-
+    closeSheet();     // default collapsed
     lb.scrollTop = 0;
   }
 
@@ -594,7 +607,6 @@ main.page{
     lb.classList.add('open');
     lb.setAttribute('aria-hidden','false');
 
-    // ✅ lock page scroll (prevents Chrome “main page moves”)
     scrollY = window.scrollY || window.pageYOffset || 0;
     document.body.classList.add('lb-open');
     document.body.style.top = `-${scrollY}px`;
@@ -610,7 +622,6 @@ main.page{
 
     closeSheet();
 
-    // ✅ restore page scroll position
     document.body.classList.remove('lb-open');
     document.body.style.top = '';
     window.scrollTo(0, scrollY);
@@ -648,12 +659,10 @@ main.page{
   btnPrev.addEventListener('click', prev);
   btnNext.addEventListener('click', next);
 
-  // click outside content to close
   lb.addEventListener('click', (e) => {
     if(e.target === lb) closeLightbox();
   });
 
-  // keyboard
   window.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
     if(e.key === 'Escape') closeLightbox();
@@ -711,7 +720,6 @@ main.page{
     if(!lb.classList.contains('open')) return;
     if(!e.touches || e.touches.length !== 1) return;
 
-    // if gesture starts on sheet, don't treat as photo swipe
     const path = e.composedPath ? e.composedPath() : [];
     if(lbSheet && path.includes(lbSheet)) return;
 
@@ -734,14 +742,10 @@ main.page{
     if(!lockedDirection){
       if(Math.abs(dx) > LOCK_THRESHOLD || Math.abs(dy) > LOCK_THRESHOLD){
         lockedDirection = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
-      } else {
-        return;
-      }
+      } else return;
     }
 
-    if(lockedDirection === "x"){
-      e.preventDefault();
-    }
+    if(lockedDirection === "x") e.preventDefault();
   }
 
   function onTouchEnd(e){
