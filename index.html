@@ -7,21 +7,18 @@
   <title>Yu Zeng Photography</title>
 
   <style>
-    *{ box-sizing:border-box; }
+    *{ box-sizing:border-box; } /* ✅ Chrome 手机端 scroll hint 不显示：请不要在 CSS 里写裸文本 */
     html,body{ height:100%; scroll-behavior:smooth; }
 
-    /* 用伪元素做“真正的背景”，移动端不会出现固定/断层问题 */
     body{
       margin:0;
       font-family:'Poppins', Arial, sans-serif;
       min-height:100vh;
-
-      background: #000; /* 兜底色 */
+      background:#000;
       scroll-snap-type:y mandatory;
       overflow-y:scroll;
     }
 
-    /* 背景图层：跟着滚动（position: fixed 但覆盖整个页面，不会“只显示第一屏”） */
     body::after{
       content:"";
       position:fixed;
@@ -31,7 +28,6 @@
       transform: translateZ(0);
     }
 
-    /* 变暗层：默认不暗，第二屏渐变变暗 */
     body::before{
       content:"";
       position:fixed;
@@ -57,6 +53,9 @@
       align-items:center;
 
       padding: 36px 20px 0;
+      /* ✅ 给底部留“呼吸空间”，避免被浏览器底栏挤住 */
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
+
       text-align:center;
       position:relative;
     }
@@ -99,7 +98,6 @@
       transform:translateY(2px);
     }
 
-    /* 分类按钮：往下推一点 */
     .cliff-dock{
       width:100%;
       max-width:1100px;
@@ -163,16 +161,18 @@
     .marker.right{ flex-direction:row-reverse; }
     .marker.right .side-text{ text-align:right; }
 
-    /* Scroll 提示：更靠底 + 箭头动 */
+    /* ✅ Scroll 提示：不再 absolute/fixed，而是“排版的一部分”
+       1) 不会压住分类块
+       2) 下滑会自然消失 */
     .scroll-down{
-      position:absolute;
-      left:0; right:0;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); /* ✅ safe-area */
+      margin-top:auto;               /* ✅ 关键：把它推到底部 */
+      padding-top: 18px;
       text-align:center;
       color:#fff;
       cursor:pointer;
       user-select:none;
-      z-index: 10; /* ✅ 确保在最上层 */
+      z-index: 10;
+      transition: opacity .25s ease, transform .25s ease;
     }
 
     .scroll-down span{
@@ -197,6 +197,13 @@
       width:28px; height:28px;
       opacity:.95;
       filter:drop-shadow(0 2px 10px rgba(0,0,0,0.45));
+    }
+
+    /* 可选：轻微滚动后让提示淡出（更“自然”） */
+    .scroll-down.is-hidden{
+      opacity:0;
+      transform: translateY(10px);
+      pointer-events:none;
     }
 
     /* ===== 第二屏 ===== */
@@ -232,10 +239,8 @@
       max-width:78ch;
     }
 
-    /* ===== Mobile ===== */
     @media (max-width: 820px){
-      /* 不再动 background-attachment（因为背景在 body::after 里了） */
-      .hero{ padding:16px 14px 0; }
+      .hero{ padding:16px 14px 0; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); }
       .hero h1{ font-size:24px; }
       .hero p{ font-size:15px; }
 
@@ -264,7 +269,6 @@
         white-space:nowrap;
       }
 
-      .scroll-down{ bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); }
       .scroll-down span{ font-size:15px; }
       .scroll-down svg{ width:24px; height:24px; }
 
@@ -307,7 +311,7 @@
       </a>
     </div>
 
-    <div class="scroll-down" onclick="scrollNext()" role="button" tabindex="0">
+    <div class="scroll-down" id="scrollHint" onclick="scrollNext()" role="button" tabindex="0">
       <span>Scroll to see why this website exists</span>
       <div class="arrow" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none">
@@ -323,15 +327,15 @@
       <h2></h2>
       <p>
         I am a very shy person. I rarely express myself, but I deeply treasure my memories.
-I take photos to remember what I felt, who I met, and the smallest things that mattered. <br>
+        I take photos to remember what I felt, who I met, and the smallest things that mattered. <br><br>
 
-Photos can never fade (thanks to god-damn technology), but my stupid brain still does.
-I was inspired by a conversation with someone about photography (and other crazy things), and tah-dah! Here is a place to keep those memories.<br>
+        Photos can never fade (thanks to god-damn technology), but my stupid brain still does.
+        I was inspired by a conversation with someone about photography (and other crazy things), and tah-dah! Here is a place to keep those memories.<br><br>
 
-All of this is truly honest to me and to the people I have met.
-If you like to dig deeper, I hope you will enjoy the journey with me/ my memories.<br>
+        All of this is truly honest to me and to the people I have met.
+        If you like to dig deeper, I hope you will enjoy the journey with me/ my memories.<br><br>
 
-(The “Sport” section is another one of my crazy dreams.)
+        (The “Sport” section is another one of my crazy dreams.)
       </p>
     </div>
   </section>
@@ -341,11 +345,10 @@ If you like to dig deeper, I hope you will enjoy the journey with me/ my memorie
       document.getElementById('manifesto').scrollIntoView({ behavior:'smooth' });
     }
 
-    // 一滚切屏
+    // 桌面滚轮切屏
     let wheelLock = false;
     window.addEventListener('wheel', (e) => {
       if (wheelLock) return;
-
       const y = window.scrollY;
       const vh = window.innerHeight;
       const down = e.deltaY > 0;
@@ -362,32 +365,16 @@ If you like to dig deeper, I hope you will enjoy the journey with me/ my memorie
       }
     }, { passive:true });
 
-    // 第二屏渐暗
-    function updateDim(){
+    // 第二屏渐暗 + 轻微滚动就隐藏提示（更“像正常网站”）
+    const hint = document.getElementById('scrollHint');
+    function update(){
       const y = window.scrollY;
       const vh = window.innerHeight;
       document.body.classList.toggle('dim', y > 0.40 * vh);
+      if(hint) hint.classList.toggle('is-hidden', y > 10);
     }
-    window.addEventListener('scroll', updateDim, { passive:true });
-
-    // ✅ 修复：Chrome 手机端 + scroll-snap 首屏不显示 scroll hint
-    window.addEventListener('load', () => {
-      updateDim();
-
-      const ua = navigator.userAgent || "";
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
-      const isChrome = /Chrome/i.test(ua) && !/CriOS/i.test(ua) && !/EdgiOS/i.test(ua);
-      // iOS Chrome 会是 CriOS，这里也可以一并处理；但你说的是 Chrome 手机端，就一起兜住
-      const isChromeLike = /Chrome|CriOS/i.test(ua);
-
-      if (isMobile && isChromeLike && window.scrollY === 0) {
-        // “唤醒”滚动系统（肉眼不可见）
-        requestAnimationFrame(() => {
-          window.scrollTo(0, 1);
-          requestAnimationFrame(() => window.scrollTo(0, 0));
-        });
-      }
-    });
+    window.addEventListener('scroll', update, { passive:true });
+    window.addEventListener('load', update);
   </script>
 </body>
 </html>
