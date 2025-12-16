@@ -26,9 +26,13 @@ body{
   height:72px;
   background:rgba(10,20,35,0.94);
   backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
   z-index:2000;
 }
-body.lb-open .navbar{ backdrop-filter:none !important; }
+body.lb-open .navbar{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
 
 .nav-inner{
   max-width:1200px;
@@ -40,6 +44,44 @@ body.lb-open .navbar{ backdrop-filter:none !important; }
   justify-content:space-between;
 }
 
+/* ===== Brand ===== */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  text-decoration:none;
+}
+.brand-logo{ height:48px; }
+.brand-text{ display:flex; flex-direction:column; line-height:1; }
+.brand-name{
+  font-family:"Montserrat",sans-serif;
+  font-weight:700;
+  font-size:17px;
+  letter-spacing:1.6px;
+  color:#fff;
+}
+.brand-sub{
+  margin-top:4px;
+  font-family:"Playfair Display",serif;
+  font-style:italic;
+  font-size:14px;
+  color:rgba(255,255,255,0.8);
+}
+
+/* ===== Nav ===== */
+.nav-links{ display:flex; gap:34px; }
+.nav-links a{
+  color:rgba(255,255,255,0.85);
+  text-decoration:none;
+  font-size:16px;
+  padding:6px 0;
+  border-bottom:2px solid transparent;
+}
+.nav-links a.active{
+  color:#fff;
+  border-bottom-color:#fff;
+}
+
 /* ===== Hero ===== */
 .hero{
   margin-top:72px;
@@ -47,9 +89,11 @@ body.lb-open .navbar{ backdrop-filter:none !important; }
   text-align:center;
   color:#fff;
   background:
-    linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),
+    linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)),
     url("photo_x/E_x.jpg") center/cover no-repeat;
 }
+.hero h1{ font-size:56px; margin:0 0 10px; }
+.hero p{ margin:0; font-size:18px; opacity:.9; }
 
 /* ===== Page ===== */
 main.page{
@@ -58,109 +102,126 @@ main.page{
   padding:28px 20px 80px;
 }
 
+/* ===== Masonry ===== */
 .masonry{ column-count:3; column-gap:16px; }
-@media(max-width:950px){ .masonry{ column-count:2; } }
-@media(max-width:650px){ .masonry{ column-count:1; } }
+@media (max-width:950px){ .masonry{ column-count:2; } }
+@media (max-width:650px){ .masonry{ column-count:1; } }
 
-.album{ break-inside:avoid; margin-bottom:16px; cursor:pointer; }
+.album{
+  break-inside:avoid;
+  margin-bottom:16px;
+  cursor:pointer;
+}
 .album img{
-  width:100%; border-radius:12px;
+  width:100%;
+  border-radius:12px;
   box-shadow:0 10px 22px rgba(0,0,0,.1);
 }
+.album p{
+  margin:8px 0 0;
+  text-align:center;
+  font-size:14px;
+}
 
-/* ===== Lightbox (desktop default) ===== */
+/* ===== Lightbox ===== */
 .lightbox{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,.86);
   display:none;
-  align-items:center;
-  justify-content:center;
   flex-direction:column;
   z-index:3000;
+  padding:20px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
 }
 .lightbox.open{ display:flex; }
 
-#lb-img{
+.lb-stage{
+  min-height:calc(100vh - 40px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding-top:16px;
+}
+
+.lightbox img{
   max-width:92vw;
-  max-height:80vh;
+  max-height:calc(100vh - 160px);
   border-radius:12px;
-  transition:opacity .18s ease;
+  margin-top:56px;
+  box-shadow:0 18px 40px rgba(0,0,0,.35);
+}
+
+#lb-img{
   opacity:0;
+  transition:opacity .18s ease;
 }
 .lightbox.open #lb-img{ opacity:1; }
 
-#lb-caption{
+.caption{
   color:#fff;
   margin-top:12px;
   text-align:center;
-  max-width:900px;
+  max-width:920px;
   line-height:1.55;
-  white-space:pre-line;
+  font-size:15px;
+  padding:0 10px 10px;
 }
 
+/* ===== Buttons ===== */
 .lb-close,.lb-prev,.lb-next{
   position:absolute;
-  width:44px; height:44px;
-  border-radius:50%;
-  background:rgba(255,255,255,.15);
-  color:#fff;
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
   border:1px solid rgba(255,255,255,.25);
-  cursor:pointer;
+  color:#fff;
+  font-size:26px;
+  line-height:40px;
 }
-.lb-close{ top:18px; right:22px; font-size:30px; }
+.lb-close{
+  position:fixed;
+  top:env(safe-area-inset-top,18px);
+  right:env(safe-area-inset-right,22px);
+  z-index:4000;
+  background:rgba(0,0,0,.55);
+}
 .lb-prev{ left:18px; top:50%; transform:translateY(-50%); }
 .lb-next{ right:18px; top:50%; transform:translateY(-50%); }
 
-/* =====================================================
-   ✅ MOBILE ONLY: image fixed center + caption drawer
-   ===================================================== */
+/* ===== Mobile ===== */
 @media (max-width:700px){
-
-  .lightbox{
-    align-items:stretch;
-    justify-content:flex-start;
-  }
-
-  .lb-stage{
-    flex:1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px 12px 140px;
-  }
-
-  #lb-img{
-    max-width:92vw;
-    max-height:calc(100dvh - 220px);
-    object-fit:contain;
-  }
-
-  /* caption becomes drawer */
-  #lb-caption{
-    position:fixed;
-    left:0; right:0; bottom:0;
-    max-height:55dvh;
-    overflow-y:auto;
-    background:rgba(0,0,0,.72);
-    backdrop-filter:blur(10px);
-    padding:14px 16px 24px;
-    border-radius:18px 18px 0 0;
-    box-shadow:0 -12px 30px rgba(0,0,0,.35);
-    text-align:center;
-  }
-
-  .lb-close{
-    position:fixed;
-    top:env(safe-area-inset-top,12px);
-    right:env(safe-area-inset-right,12px);
-    background:rgba(0,0,0,.55);
-  }
+  .navbar{ height:64px; }
+  .hero{ margin-top:64px; padding:90px 0 60px; }
+  .hero h1{ font-size:40px; }
 }
 </style>
 </head>
 
 <body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <img src="photo_x/Logo.png" class="brand-logo">
+      <div class="brand-text">
+        <span class="brand-name">Yu Zeng</span>
+        <span class="brand-sub">Photography</span>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a class="active" href="memento.html">Memento</a>
+      <a href="shutter.html">Shutter</a>
+      <a href="sport.html">Sport</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+</nav>
 
 <header class="hero">
   <h1>Memento</h1>
@@ -172,12 +233,9 @@ main.page{
 
     <div class="album"
       data-title="Liverpool"
-      data-caption="Liverpool is a place full of memories.
-The city is gloomy and unapologetically devoted to its drinking culture.
-The cover photo captures a walk with my “bro” Xin on a rare day of beautiful weather.
-We made it to lots of bars, hit my head in the climbing gym, and stayed at Finn's place watching dramas."
+      data-caption="Liverpool is a place full of memories..."
       data-images="photo_x/DSC00741_x.jpg,photo_x/DSC01866_x.jpg,photo_x/DSC00395_x.jpg">
-      <img src="photo_x/DSC00741_x.jpg">
+      <img src="photo_x/DSC00741_x.jpg" loading="lazy">
       <p>Liverpool</p>
     </div>
 
@@ -189,50 +247,80 @@ We made it to lots of bars, hit my head in the climbing gym, and stayed at Finn'
 
     <div class="lb-stage">
       <img id="lb-img">
+      <div class="caption" id="lb-caption"></div>
     </div>
 
     <button class="lb-next">&#8250;</button>
-    <div id="lb-caption"></div>
   </div>
 </main>
 
 <script>
 const lb = document.getElementById('lightbox');
-const img = document.getElementById('lb-img');
-const cap = document.getElementById('lb-caption');
+const lbImg = document.getElementById('lb-img');
+const lbCaption = document.getElementById('lb-caption');
+const btnPrev = document.querySelector('.lb-prev');
+const btnNext = document.querySelector('.lb-next');
+const btnClose = document.querySelector('.lb-close');
 
-let images=[], idx=0, title='', caption='';
+const isMobile = window.matchMedia("(max-width:700px)").matches;
 
-function show(){
-  img.style.opacity=0;
-  const src = images[idx];
-  const t = new Image();
-  t.onload=()=>{
-    img.src=src;
-    requestAnimationFrame(()=>img.style.opacity=1);
+let images=[], index=0, title='', caption='', isSwitching=false;
+
+function preload(src){
+  if(!src) return;
+  const i=new Image(); i.decoding="async"; i.src=src;
+}
+
+function render(){
+  const src=images[index];
+  lbImg.style.opacity=0;
+
+  preload(images[index+1]);
+  preload(images[index-1]);
+
+  if(isMobile){
+    isSwitching=true;
+    btnPrev.disabled=btnNext.disabled=true;
+  }
+
+  const unlock=()=> {
+    isSwitching=false;
+    btnPrev.disabled=btnNext.disabled=false;
   };
-  t.src=src;
-  cap.textContent = `${title} — ${idx+1}/${images.length}\n\n${caption}`;
+  setTimeout(unlock,500);
+
+  const tmp=new Image();
+  tmp.onload=()=>{
+    lbImg.src=src;
+    requestAnimationFrame(()=>lbImg.style.opacity=1);
+    unlock();
+  };
+  tmp.src=src;
+
+  lbCaption.textContent=`${title} — ${index+1}/${images.length} · ${caption}`;
+  lb.scrollTop=0;
+}
+
+function openLB(list,t,c){
+  images=list; index=0; title=t; caption=c;
+  lb.classList.add('open');
+  document.body.classList.add('lb-open');
+  render();
 }
 
 document.querySelectorAll('.album').forEach(a=>{
   a.onclick=()=>{
-    images=a.dataset.images.split(',');
-    idx=0;
-    title=a.dataset.title||'';
-    caption=a.dataset.caption||'';
-    lb.classList.add('open');
-    document.body.classList.add('lb-open');
-    show();
+    openLB(
+      a.dataset.images.split(','),
+      a.dataset.title,
+      a.dataset.caption
+    );
   };
 });
 
-document.querySelector('.lb-close').onclick=()=>{
-  lb.classList.remove('open');
-  document.body.classList.remove('lb-open');
-};
-document.querySelector('.lb-prev').onclick=()=>{ idx=(idx-1+images.length)%images.length; show(); };
-document.querySelector('.lb-next').onclick=()=>{ idx=(idx+1)%images.length; show(); };
+btnClose.onclick=()=>{ lb.classList.remove('open'); document.body.classList.remove('lb-open'); };
+btnPrev.onclick=()=>{ if(isMobile && isSwitching) return; index=(index-1+images.length)%images.length; render(); };
+btnNext.onclick=()=>{ if(isMobile && isSwitching) return; index=(index+1)%images.length; render(); };
 </script>
 
 </body>
