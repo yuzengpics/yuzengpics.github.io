@@ -388,6 +388,37 @@ main.page{
     white-space: pre-line;
   }
 }
+
+/* =========================
+   ✅ Desktop scroll hint (NEW)
+   ========================= */
+.lb-scroll-hint{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 18px;
+
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.92);
+  font-size: 13px;
+  line-height: 1;
+  z-index: 5200;
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  display: none;
+  pointer-events: none;
+}
+.lb-scroll-hint.show{ display: inline-flex; }
+
+/* Mobile: hide hint */
+@media (max-width:700px){
+  .lb-scroll-hint{ display:none !important; }
+}
 </style>
 </head>
 
@@ -478,6 +509,11 @@ The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
       </div>
       <div class="cap-body" id="capBody"></div>
     </div>
+
+    <!-- ✅ Desktop scroll hint (NEW) -->
+    <div class="lb-scroll-hint" id="lbScrollHint" aria-hidden="true">
+      Scroll for more ↓
+    </div>
   </div>
 </main>
 
@@ -493,6 +529,9 @@ The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
   const capHandle = document.getElementById('capHandle');
   const capTitle = document.getElementById('capTitle');
   const capBody = document.getElementById('capBody');
+
+  // ✅ Desktop hint element (NEW)
+  const lbScrollHint = document.getElementById('lbScrollHint');
 
   let images = [];
   let index = 0;
@@ -581,6 +620,28 @@ The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
     return body;
   }
 
+  // ✅ Desktop scroll hint logic (NEW)
+  function updateScrollHint(){
+    if(!lbScrollHint) return;
+
+    if(isMobileNow() || !lb.classList.contains('open')){
+      lbScrollHint.classList.remove('show');
+      lbScrollHint.setAttribute('aria-hidden','true');
+      return;
+    }
+
+    const canScroll = lb.scrollHeight > lb.clientHeight + 10;
+    const atBottom = lb.scrollTop >= (lb.scrollHeight - lb.clientHeight - 10);
+
+    if(canScroll && !atBottom){
+      lbScrollHint.classList.add('show');
+      lbScrollHint.setAttribute('aria-hidden','false');
+    } else {
+      lbScrollHint.classList.remove('show');
+      lbScrollHint.setAttribute('aria-hidden','true');
+    }
+  }
+
   function render(){
     if(!images.length) return;
 
@@ -612,12 +673,14 @@ The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
       lbImg.src = src;
       requestAnimationFrame(() => { lbImg.style.opacity = 1; });
       unlock();
+      updateScrollHint(); // NEW
     };
 
     tmp.onerror = () => {
       lbImg.src = src;
       requestAnimationFrame(() => { lbImg.style.opacity = 1; });
       unlock();
+      updateScrollHint(); // NEW
     };
 
     tmp.src = src;
@@ -637,6 +700,9 @@ The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
       capBody.scrollTop = 0;
       closeCaptionSheet();
     }
+
+    // Ensure hint state correct (NEW)
+    updateScrollHint();
   }
 
   function openLightbox(list, t, c){
@@ -654,6 +720,7 @@ The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
     document.body.style.top = `-${scrollY}px`;
 
     render();
+    updateScrollHint(); // NEW
   }
 
   function closeLightbox(){
@@ -667,6 +734,7 @@ The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
     window.scrollTo(0, scrollY);
 
     unlock();
+    updateScrollHint(); // NEW
   }
 
   function prev(){
@@ -709,6 +777,10 @@ The cover photo was a walk with my “bro” Xin on a "strange" beautiful day.'
     if(e.key === 'ArrowLeft') prev();
     if(e.key === 'ArrowRight') next();
   });
+
+  // ✅ keep hint in sync when scrolling / resizing (NEW)
+  lb.addEventListener('scroll', updateScrollHint, { passive:true });
+  window.addEventListener('resize', updateScrollHint);
 
   // caption sheet toggle + swipe
   if(capHandle && capSheet){
