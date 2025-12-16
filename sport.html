@@ -626,7 +626,7 @@ main.page{
 
     // desktop caption
     lbCaption.textContent = title
-      ? `${title} — ${counter}${cleanCaption ? " · " + cleanCaption : ""}`
+      ? `${title} — ${counter}${cleanCaption ? "\n\n" + cleanCaption : ""}`
       : counter;
 
     // mobile sheet caption content (top: Title — 1/7, body: ONLY caption)
@@ -649,7 +649,7 @@ main.page{
     lb.classList.add('open');
     lb.setAttribute('aria-hidden','false');
 
-    // ✅ lock page scroll (prevents Chrome “main page moves”)
+    //  lock page scroll (prevents Chrome “main page moves”)
     scrollY = window.scrollY || window.pageYOffset || 0;
     document.body.classList.add('lb-open');
     document.body.style.top = `-${scrollY}px`;
