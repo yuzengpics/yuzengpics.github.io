@@ -137,6 +137,7 @@ main.page{
   transform: translateY(-2px);
   box-shadow: 0 14px 30px rgba(0,0,0,0.14);
 }
+
 .album p{
   margin: 8px 0 0;
   text-align:center;
@@ -144,7 +145,7 @@ main.page{
   color:#444;
 }
 
-/* ===== Lightbox (carousel) ===== */
+/* ===== Lightbox ===== */
 .lightbox{
   position: fixed;
   inset: 0;
@@ -153,19 +154,26 @@ main.page{
   flex-direction: column;
   z-index: 3000;
 
-  /* desktop: no scroll needed */
-  overflow: hidden;
+  /* ✅ Desktop: allow scroll if caption is long */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .lightbox.open{ display:flex; }
 
-/* Stage */
+/* Stage (desktop/base) */
 .lightbox .lb-stage{
-  min-height: 100vh;
+  min-height: auto;
   display:flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+
+  padding-left: 16px;
+  padding-right: 16px;
+
+  /* keep image away from close btn */
+  padding-top: 70px;
+  padding-bottom: 22px;
 }
 
 /* Image */
@@ -190,7 +198,7 @@ main.page{
 }
 .lightbox.open #lb-img{ opacity: 1; }
 
-/* Caption (desktop: below image) */
+/* Desktop caption (below image) */
 .lightbox .caption{
   color: #fff;
   margin-top: 12px;
@@ -199,7 +207,9 @@ main.page{
   line-height: 1.55;
   font-size: 15px;
   opacity: 0.95;
-  padding: 0 10px 10px;
+  padding: 0 10px 18px;
+  white-space: pre-line;
+  word-break: break-word;
 }
 
 /* Buttons */
@@ -216,6 +226,7 @@ main.page{
   cursor: pointer;
   user-select: none;
 }
+
 .lb-close{
   position: fixed;
   top: 18px;
@@ -228,6 +239,7 @@ main.page{
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
+
 .lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
 .lb-next{ right: 18px; top: 50%; transform: translateY(-50%); }
 
@@ -235,6 +247,9 @@ main.page{
   opacity: .45;
   cursor: not-allowed;
 }
+
+/* Mobile caption sheet (desktop off) */
+.caption-sheet{ display:none; }
 
 /* ===== Mobile ===== */
 @media (max-width:700px){
@@ -256,22 +271,16 @@ main.page{
   .hero h1{ font-size:40px; }
   .hero p{ font-size:16px; }
 
-  /* ✅ Mobile: lightbox scrolls; swipe up to read caption */
+  /* ✅ Mobile: no page scroll; caption uses bottom sheet */
   .lightbox{
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y; /* allow vertical scroll; JS intercepts horizontal swipe */
+    overflow: hidden;
+    touch-action: pan-y;
   }
 
-  /* ✅ Mobile: center image first screen; caption below */
   .lightbox .lb-stage{
     min-height: 100dvh;
-    padding-left: 16px;
-    padding-right: 16px;
-
     padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-
     justify-content: center;
   }
 
@@ -280,18 +289,98 @@ main.page{
     max-width: 92vw;
   }
 
-  .lightbox .caption{
-    position: relative;
-    margin-top: 16px;
-    padding: 16px 10px 24px;
-    max-width: 920px;
-    text-align: left;
-    white-space: pre-line;
+  /* Hide desktop caption on mobile */
+  .lightbox .caption{ display:none; }
+
+  /* ✅ Mobile arrows fixed to viewport */
+  .lb-prev, .lb-next{
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3600;
+    transition: top .18s ease;
+  }
+  .lb-prev{ left: 12px; }
+  .lb-next{ right: 12px; }
+
+  /* ✅ When caption sheet opens, lift arrows upward */
+  .lightbox.cap-open .lb-prev,
+  .lightbox.cap-open .lb-next{
+    top: calc(50% - 90px); /* 想更高：-110px；更低：-70px */
   }
 
+  /* close button safe area */
   .lb-close{
     top: calc(env(safe-area-inset-top, 0px) + 12px);
     right: calc(env(safe-area-inset-right, 0px) + 12px);
+  }
+
+  /* Mobile bottom sheet */
+  .caption-sheet{
+    display:block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3500;
+
+    max-height: 72dvh;
+
+    background: rgba(0,0,0,0.70);
+    border-top: 1px solid rgba(255,255,255,0.16);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    transform: translateY(calc(100% - 74px));
+    transition: transform .22s ease;
+    will-change: transform;
+
+    display:flex;
+    flex-direction: column;
+
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .lightbox.cap-open .caption-sheet{
+    transform: translateY(0);
+  }
+
+  .cap-handle{
+    height: 74px;
+    padding: 10px 14px 8px;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  .cap-grip{
+    width: 46px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.35);
+    margin: 0 auto;
+  }
+  .cap-title{
+    color:#fff;
+    font-size: 13px;
+    opacity: .90;
+    text-align:center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cap-body{
+    padding: 0 16px 16px;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    color:#fff;
+    opacity: .95;
+    line-height: 1.55;
+    font-size: 14px;
+    white-space: pre-line;
   }
 }
 </style>
@@ -351,10 +440,20 @@ main.page{
 
     <div class="lb-stage">
       <img id="lb-img" src="" alt="" decoding="async" draggable="false">
+      <!-- desktop caption -->
       <div class="caption" id="lb-caption"></div>
     </div>
 
     <button class="lb-next" aria-label="Next">&#8250;</button>
+
+    <!-- mobile bottom sheet caption -->
+    <div class="caption-sheet" id="capSheet" aria-hidden="true">
+      <div class="cap-handle" id="capHandle">
+        <div class="cap-grip"></div>
+        <div class="cap-title" id="capTitle">Swipe up for caption</div>
+      </div>
+      <div class="cap-body" id="capBody"></div>
+    </div>
   </div>
 </main>
 
@@ -366,12 +465,18 @@ main.page{
   const btnPrev = document.querySelector('.lb-prev');
   const btnNext = document.querySelector('.lb-next');
 
+  // mobile caption sheet
+  const capSheet = document.getElementById('capSheet');
+  const capHandle = document.getElementById('capHandle');
+  const capTitle = document.getElementById('capTitle');
+  const capBody = document.getElementById('capBody');
+
   let images = [];
   let index = 0;
   let title = '';
   let caption = '';
 
-  // "lock" state (mobile only)
+  // mobile-only lock
   let isSwitching = false;
   let unlockTimer = null;
 
@@ -407,7 +512,7 @@ main.page{
       isSwitching = false;
       setNavDisabled(false);
       unlockTimer = null;
-    }, 500);
+    }, 500); // 0.5s
   }
 
   function unlock(){
@@ -417,6 +522,16 @@ main.page{
     }
     isSwitching = false;
     setNavDisabled(false);
+  }
+
+  function closeCaptionSheet(){
+    lb.classList.remove('cap-open');
+    if(capSheet) capSheet.setAttribute('aria-hidden','true');
+  }
+
+  function openCaptionSheet(){
+    lb.classList.add('cap-open');
+    if(capSheet) capSheet.setAttribute('aria-hidden','false');
   }
 
   function render(){
@@ -451,11 +566,21 @@ main.page{
 
     tmp.src = src;
 
+    // desktop caption
     lbCaption.textContent = title
       ? `${title} — ${counter}${caption ? " · " + caption : ""}`
       : counter;
 
-    lb.scrollTop = 0;
+    // mobile sheet caption content
+    if(capBody){
+      const full = title
+        ? `${title} — ${counter}${caption ? "\n\n" + caption : ""}`
+        : counter;
+      capBody.textContent = full;
+      capTitle.textContent = title ? `${title} — ${counter}` : counter;
+      capBody.scrollTop = 0;
+      closeCaptionSheet();
+    }
   }
 
   function openLightbox(list, t, c){
@@ -469,12 +594,12 @@ main.page{
     document.body.style.overflow = 'hidden';
     document.body.classList.add('lb-open');
 
-    lb.scrollTop = 0;
     render();
   }
 
   function closeLightbox(){
     lb.classList.remove('open');
+    lb.classList.remove('cap-open');
     lb.setAttribute('aria-hidden','true');
     document.body.style.overflow = '';
     document.body.classList.remove('lb-open');
@@ -502,6 +627,7 @@ main.page{
         .split(',')
         .map(s => s.trim())
         .filter(Boolean);
+
       if(!list.length) return;
       openLightbox(list, card.dataset.title, card.dataset.caption);
     });
@@ -511,10 +637,12 @@ main.page{
   btnPrev.addEventListener('click', prev);
   btnNext.addEventListener('click', next);
 
+  // Click outside stage to close
   lb.addEventListener('click', (e) => {
     if(e.target === lb) closeLightbox();
   });
 
+  // Keyboard navigation
   window.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
     if(e.key === 'Escape') closeLightbox();
@@ -523,17 +651,62 @@ main.page{
   });
 
   /* =========================
-     Swipe support (mobile)
+     Mobile: Caption sheet toggle + swipe up/down
+     ========================= */
+  if(capHandle && capSheet){
+    capHandle.addEventListener('click', () => {
+      if(!isMobileNow()) return;
+      if(lb.classList.contains('cap-open')) closeCaptionSheet();
+      else openCaptionSheet();
+    });
+
+    let capStartY = 0;
+    let capDy = 0;
+    let capTracking = false;
+
+    capHandle.addEventListener('touchstart', (e) => {
+      if(!isMobileNow()) return;
+      if(!e.touches || e.touches.length !== 1) return;
+      capStartY = e.touches[0].clientY;
+      capDy = 0;
+      capTracking = true;
+    }, { passive:true });
+
+    capHandle.addEventListener('touchmove', (e) => {
+      if(!capTracking) return;
+      if(!isMobileNow()) return;
+      if(!e.touches || e.touches.length !== 1) return;
+      capDy = e.touches[0].clientY - capStartY;
+      if(Math.abs(capDy) > 6) e.preventDefault();
+    }, { passive:false });
+
+    capHandle.addEventListener('touchend', () => {
+      if(!capTracking) return;
+      capTracking = false;
+      if(!isMobileNow()) return;
+
+      if(capDy < -30) openCaptionSheet();
+      else if(capDy > 30) closeCaptionSheet();
+    }, { passive:true });
+  }
+
+  /* =========================
+     Swipe support (mobile) left/right for photos
      ========================= */
   let startX = 0, startY = 0;
   let tracking = false;
-  let lockedDirection = null; // "x" | "y" | null
+  let lockedDirection = null;
   const SWIPE_MIN = 45;
   const LOCK_THRESHOLD = 10;
 
   function onTouchStart(e){
     if(!lb.classList.contains('open')) return;
+    if(!isMobileNow()) return;
     if(!e.touches || e.touches.length !== 1) return;
+
+    // If touch starts on caption sheet, do not treat as photo swipe
+    const path = e.composedPath ? e.composedPath() : [];
+    if(path.includes(capSheet)) return;
 
     const t = e.touches[0];
     startX = t.clientX;
@@ -545,6 +718,7 @@ main.page{
   function onTouchMove(e){
     if(!tracking) return;
     if(!lb.classList.contains('open')) return;
+    if(!isMobileNow()) return;
     if(!e.touches || e.touches.length !== 1) return;
 
     const t = e.touches[0];
@@ -569,6 +743,7 @@ main.page{
     tracking = false;
 
     if(!lb.classList.contains('open')) return;
+    if(!isMobileNow()) return;
     if(lockedDirection !== "x") return;
 
     const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
@@ -588,10 +763,11 @@ main.page{
   lb.addEventListener('touchmove', onTouchMove, { passive: false });
   lb.addEventListener('touchend', onTouchEnd, { passive: true });
 
-  // Optional: double-tap image to close
+  // Optional: double-tap image to close (mobile)
   let lastTap = 0;
   lbImg.addEventListener('touchend', () => {
     if(!lb.classList.contains('open')) return;
+    if(!isMobileNow()) return;
     const now = Date.now();
     if(now - lastTap < 300) closeLightbox();
     lastTap = now;
