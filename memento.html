@@ -147,6 +147,9 @@ main.page{
   flex-direction: column;
   z-index: 3000;
   padding: 20px;
+
+  /* Allow vertical pan; we will intercept horizontal swipe */
+  touch-action: pan-y;
 }
 .lightbox.open{ display:flex; }
 
@@ -162,6 +165,9 @@ main.page{
   opacity: 0;
   transition: opacity .18s ease;
   will-change: opacity;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 .lightbox.open #lb-img{ opacity: 1; }
 
@@ -193,7 +199,6 @@ main.page{
 .lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
 .lb-next{ right: 18px; top: 50%; transform: translateY(-50%); }
 
-/* disabled state for mobile spam clicking */
 .lb-prev[disabled], .lb-next[disabled]{
   opacity: .45;
   cursor: not-allowed;
@@ -327,10 +332,8 @@ stayed at Finn&apos;s place watching dramas.'
     const counter = `${index + 1}/${images.length}`;
     lbImg.alt = title ? `${title} (${counter})` : `Photo ${counter}`;
 
-    // Fade out immediately
     lbImg.style.opacity = 0;
 
-    // Preload current + neighbors (wrap index to avoid undefined)
     preload(images[safeIndex(index)]);
     preload(images[safeIndex(index + 1)]);
     preload(images[safeIndex(index - 1)]);
@@ -349,7 +352,6 @@ stayed at Finn&apos;s place watching dramas.'
     };
 
     tmp.onerror = () => {
-      // If image fails, still swap (shows broken image icon -> easier to find bad path)
       lbImg.src = src;
       requestAnimationFrame(() => { lbImg.style.opacity = 1; });
       isSwitching = false;
@@ -424,6 +426,72 @@ stayed at Finn&apos;s place watching dramas.'
     if(e.key === 'ArrowLeft') prev();
     if(e.key === 'ArrowRight') next();
   });
+
+  /* =========================
+     Swipe support (mobile)
+     ========================= */
+  let startX = 0, startY = 0;
+  let tracking = false;
+  let lockedDirection = null; // "x" | "y" | null
+  const SWIPE_MIN = 45;       // px
+  const LOCK_THRESHOLD = 10;  // px
+
+  function onTouchStart(e){
+    if(!lb.classList.contains('open')) return;
+    if(!e.touches || e.touches.length !== 1) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    tracking = true;
+    lockedDirection = null;
+  }
+
+  function onTouchMove(e){
+    if(!tracking) return;
+    if(!lb.classList.contains('open')) return;
+    if(!e.touches || e.touches.length !== 1) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+
+    if(!lockedDirection){
+      if(Math.abs(dx) > LOCK_THRESHOLD || Math.abs(dy) > LOCK_THRESHOLD){
+        lockedDirection = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      } else {
+        return;
+      }
+    }
+
+    if(lockedDirection === "x"){
+      e.preventDefault();
+    }
+  }
+
+  function onTouchEnd(e){
+    if(!tracking) return;
+    tracking = false;
+
+    if(!lb.classList.contains('open')) return;
+    if(lockedDirection !== "x") return;
+
+    const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+    if(!t) return;
+
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+
+    if(Math.abs(dx) < SWIPE_MIN) return;
+    if(Math.abs(dx) < Math.abs(dy)) return;
+
+    if(dx < 0) next();
+    else prev();
+  }
+
+  lb.addEventListener('touchstart', onTouchStart, { passive: true });
+  lb.addEventListener('touchmove', onTouchMove, { passive: false });
+  lb.addEventListener('touchend', onTouchEnd, { passive: true });
 </script>
 
 </body>
