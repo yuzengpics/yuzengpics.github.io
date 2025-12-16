@@ -145,18 +145,13 @@ main.page{
   flex-direction: column;
   z-index: 3000;
 
-  /* allow vertical scroll for long captions */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-
-  /* allow vertical pan; we'll intercept horizontal swipe in JS */
   touch-action: pan-y;
 }
 .lightbox.open{ display:flex; }
 
-/* stage: reserve safe area + space for close btn */
 .lightbox .lb-stage{
-  /* use dvh on mobile Safari to avoid 100vh bugs */
   min-height: 100dvh;
   display:flex;
   flex-direction: column;
@@ -166,26 +161,20 @@ main.page{
   padding-left: 16px;
   padding-right: 16px;
 
-  /* top padding ensures image never sits under the close button */
   padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
 }
 
-/* Image sizing: contain fully, no extra margin-top */
 .lightbox img{
   width: auto;
   max-width: 92vw;
-
-  /* key fix: dvh + enough room for caption + controls */
   max-height: calc(100dvh - 210px);
-
   border-radius: 12px;
   box-shadow: 0 18px 40px rgba(0,0,0,0.35);
   display:block;
   object-fit: contain;
 }
 
-/* Smooth swap */
 #lb-img{
   opacity: 0;
   transition: opacity .18s ease;
@@ -207,7 +196,6 @@ main.page{
   padding: 0 10px 10px;
 }
 
-/* Lightbox buttons */
 .lb-close, .lb-prev, .lb-next{
   position: absolute;
   background: rgba(255,255,255,0.12);
@@ -222,7 +210,6 @@ main.page{
   user-select: none;
 }
 
-/* Close button always reachable (fixed) */
 .lb-close{
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 12px);
@@ -236,7 +223,6 @@ main.page{
   -webkit-backdrop-filter: blur(6px);
 }
 
-/* prev/next */
 .lb-prev{ left: 18px; top: 50%; transform: translateY(-50%); }
 .lb-next{ right: 18px; top: 50%; transform: translateY(-50%); }
 
@@ -265,7 +251,6 @@ main.page{
   .hero h1{ font-size:40px; }
   .hero p{ font-size:16px; }
 
-  /* a bit more room for caption on small screens */
   .lightbox img{
     max-height: calc(100dvh - 230px);
   }
@@ -352,8 +337,13 @@ stayed at Finn&apos;s place watching dramas.'
   let title = '';
   let caption = '';
 
-  // Prevent mobile spam-click lockups (your “lock”)
+  // "lock" state
   let isSwitching = false;
+  let unlockTimer = null;
+
+  function isMobileNow(){
+    return window.matchMedia("(max-width:700px)").matches;
+  }
 
   function preload(src){
     if(!src) return;
@@ -372,6 +362,32 @@ stayed at Finn&apos;s place watching dramas.'
     btnNext.disabled = disabled;
   }
 
+  function lockIfMobile(){
+    // ✅ desktop: never lock
+    if(!isMobileNow()) return;
+
+    isSwitching = true;
+    setNavDisabled(true);
+
+    // ✅ mobile: fallback unlock after 0.5s (not 1.5s)
+    if(unlockTimer) clearTimeout(unlockTimer);
+    unlockTimer = setTimeout(() => {
+      isSwitching = false;
+      setNavDisabled(false);
+      unlockTimer = null;
+    }, 500);
+  }
+
+  function unlock(){
+    // clear fallback timer
+    if(unlockTimer){
+      clearTimeout(unlockTimer);
+      unlockTimer = null;
+    }
+    isSwitching = false;
+    setNavDisabled(false);
+  }
+
   function render(){
     if(!images.length) return;
 
@@ -387,8 +403,8 @@ stayed at Finn&apos;s place watching dramas.'
     preload(images[safeIndex(index + 1)]);
     preload(images[safeIndex(index - 1)]);
 
-    isSwitching = true;
-    setNavDisabled(true);
+    // ✅ only lock on mobile, and only 0.5s
+    lockIfMobile();
 
     const tmp = new Image();
     tmp.decoding = "async";
@@ -396,16 +412,14 @@ stayed at Finn&apos;s place watching dramas.'
     tmp.onload = () => {
       lbImg.src = src;
       requestAnimationFrame(() => { lbImg.style.opacity = 1; });
-      isSwitching = false;
-      setNavDisabled(false);
+      // ✅ image loaded: unlock immediately (mobile & desktop都安全)
+      unlock();
     };
 
     tmp.onerror = () => {
-      // even if error, don't “freeze”
       lbImg.src = src;
       requestAnimationFrame(() => { lbImg.style.opacity = 1; });
-      isSwitching = false;
-      setNavDisabled(false);
+      unlock();
     };
 
     tmp.src = src;
@@ -438,20 +452,20 @@ stayed at Finn&apos;s place watching dramas.'
     lb.setAttribute('aria-hidden','true');
     document.body.style.overflow = '';
     document.body.classList.remove('lb-open');
-    isSwitching = false;
-    setNavDisabled(false);
+    unlock();
   }
 
   function prev(){
     if(images.length <= 1) return;
-    if(isSwitching) return;
+    // ✅ desktop不锁；mobile才会拦截
+    if(isMobileNow() && isSwitching) return;
     index = safeIndex(index - 1);
     render();
   }
 
   function next(){
     if(images.length <= 1) return;
-    if(isSwitching) return;
+    if(isMobileNow() && isSwitching) return;
     index = safeIndex(index + 1);
     render();
   }
@@ -473,11 +487,9 @@ stayed at Finn&apos;s place watching dramas.'
   btnPrev.addEventListener('click', prev);
   btnNext.addEventListener('click', next);
 
-  // Click outside stage to close (don’t close when tapping on content)
+  // Click outside stage to close
   lb.addEventListener('click', (e) => {
-    const stage = lb.querySelector('.lb-stage');
     if(e.target === lb) closeLightbox();
-    if(stage && e.target === stage) closeLightbox();
   });
 
   // Keyboard navigation
@@ -494,8 +506,8 @@ stayed at Finn&apos;s place watching dramas.'
   let startX = 0, startY = 0;
   let tracking = false;
   let lockedDirection = null; // "x" | "y" | null
-  const SWIPE_MIN = 45;       // px
-  const LOCK_THRESHOLD = 10;  // px
+  const SWIPE_MIN = 45;
+  const LOCK_THRESHOLD = 10;
 
   function onTouchStart(e){
     if(!lb.classList.contains('open')) return;
@@ -526,7 +538,7 @@ stayed at Finn&apos;s place watching dramas.'
     }
 
     if(lockedDirection === "x"){
-      e.preventDefault(); // intercept horizontal swipe
+      e.preventDefault();
     }
   }
 
@@ -554,7 +566,7 @@ stayed at Finn&apos;s place watching dramas.'
   lb.addEventListener('touchmove', onTouchMove, { passive: false });
   lb.addEventListener('touchend', onTouchEnd, { passive: true });
 
-  /* Optional: double-tap image to close (extra safety) */
+  // Optional: double-tap image to close
   let lastTap = 0;
   lbImg.addEventListener('touchend', () => {
     if(!lb.classList.contains('open')) return;
