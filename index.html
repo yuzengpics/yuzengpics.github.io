@@ -57,7 +57,7 @@
       min-height: calc(var(--vh) * 100);
     }
 
-    /* ===== 第一屏 ===== */
+    /* First screen */
     .hero{
       scroll-snap-align:start;
       scroll-snap-stop:always;
@@ -174,7 +174,7 @@
     .marker.right{ flex-direction:row-reverse; }
     .marker.right .side-text{ text-align:right; }
 
-    /* Scroll 提示 */
+    /* Scroll hint */
     .scroll-down{
       position:fixed;
       left:0; right:0;
@@ -211,7 +211,7 @@
       filter:drop-shadow(0 2px 10px rgba(0,0,0,0.45));
     }
 
-    /* ===== 第二屏 ===== */
+    /* second screen */
     .manifesto{
       scroll-snap-align:start;
       scroll-snap-stop:always;
@@ -243,7 +243,7 @@
       max-width:78ch;
     }
 
-    /* ===== Mobile ===== */
+    /* mobile devices */
     @media (max-width: 820px){
   .hero{
     padding:16px 14px 0;
@@ -267,26 +267,24 @@
     align-items:center;
     text-align:center;
 
-    width: 88vw;           /* ✅ 统一宽度（关键） */
-    max-width: 520px;      /* 桌面尺寸上限 */
+    width: 88vw;           
+    max-width: 520px;     
     margin: 0 auto;
 
     gap:6px;
     background:rgba(0,0,0,0.34);
   }
 
-  /* 清除桌面端残留的左右逻辑 */
   .marker.left,
   .marker.right{
     justify-self:center;
     flex-direction:column;
   }
 
-  /* ✅ 解释文字：允许换行，完整显示 */
   .marker .side-text{
     opacity:1;
     max-width:100%;
-    white-space: normal;   /* ✅ 允许换行（关键） */
+    white-space: normal;  
     overflow: visible;
     text-align:center;
   }
